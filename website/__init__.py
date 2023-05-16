@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_mysqldb import MySQL
-from website import views, auth
+from . import auth
+from website import views
 import yaml
 
 def create_app():

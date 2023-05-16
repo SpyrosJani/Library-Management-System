@@ -1,6 +1,6 @@
 -----------------------------------------Create Database----------------------------------------
 CREATE DATABASE librarydbms;
-use librarydbms;
+USE librarydbms;
 
 -----------------------------------------Tables----------------------------------------
 --administrator(admin_id, login_id, passwd, first_name, last_name, sex, birth_date)
@@ -62,7 +62,7 @@ CREATE TABLE school_admin(
     CHECK (birth_date < '2000-01-01')
 );
 
---user(user_id, login_id, passwd, first_name, last_name, birth_date, job, books_borrowed, user_status)
+--user(user_id, login_id, passwd, first_name, last_name, birth_date, school_name, job, books_borrowed, user_status)
 CREATE TABLE user(
     user_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     login_id VARCHAR(50) NOT NULL,
@@ -70,12 +70,13 @@ CREATE TABLE user(
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
     birth_date DATE NOT NULL,
+    school_name NVARCHAR(50) NOT NULL,
     job ENUM('Student', 'Teacher') NOT NULL,
     books_borrowed INT UNSIGNED NOT NULL DEFAULT 0,
     user_status ENUM('Waiting', 'Approved', 'Declined') NOT NULL DEFAULT 'Waiting',
     PRIMARY KEY (user_id),
     UNIQUE (login_id),
-    CHECK ((birth_date <= '2018-01-01' AND job = 'Student') OR (birth_date <= '2000-01-01' AND job = 'Teacher'))
+    CHECK ((birth_date < '2018-01-01' AND job = 'Student') OR (birth_date < '2000-01-01' AND job = 'Teacher'))
 );
 
 
@@ -107,7 +108,7 @@ CREATE TABLE review(
     review_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     ISBN INT UNSIGNED NOT NULL,
     user_id INT UNSIGNED NOT NULL,
-    review_date DATE NOT NULL,
+    review_date DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     txt TEXT NOT NULL,
     likert VARCHAR(50) DEFAULT NULL,
     review_status ENUM('Waiting', 'Approved', 'Declined') NOT NULL DEFAULT 'Waiting',
@@ -164,7 +165,7 @@ CREATE TABLE reservation(
     reservation_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     ISBN INT UNSIGNED NOT NULL,
     user_id INT UNSIGNED NOT NULL,
-    reservation_date DATE NOT NULL,
+    reservation_date DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     reservation_status ENUM('Waiting', 'Approved', 'Declined') NOT NULL DEFAULT 'Waiting',
     PRIMARY KEY (reservation_id),
     CONSTRAINT fk_reservation_book
@@ -174,7 +175,7 @@ CREATE TABLE reservation(
     CONSTRAINT fk_reservation_user
         FOREIGN KEY (user_id) REFERENCES user(user_id) 
         ON DELETE CASCADE 
-        ON UPDATE CASCADE 
+        ON UPDATE CASCADE
 );
 
 --borrowing(borrowing_id, ISBN, user_id, borrowing_date, borrowing_status, scadmin_id)
@@ -182,7 +183,7 @@ CREATE TABLE borrowing(
     borrowing_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     ISBN INT UNSIGNED NOT NULL,
     user_id INT UNSIGNED NOT NULL,
-    borrowing_date DATE NOT NULL,
+    borrowing_date DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     borrowing_status ENUM('Waiting', 'Approved', 'Declined', 'Completed') DEFAULT 'Waiting',
     scadmin_id INT UNSIGNED NOT NULL,
     PRIMARY KEY (borrowing_id),
@@ -208,8 +209,9 @@ CREATE INDEX idx_user ON user (first_name, last_name, job, user_status, books_bo
 CREATE INDEX idx_school ON school (school_id, school_name);
 CREATE INDEX idx_borrowing ON borrowing (ISBN, user_id, borrowing_date, borrowing_status, scadmin_id);
 CREATE INDEX idx_book ON book (ISBN, book_title, school_id, scadmin_id);
+CREATE INDEX idx_school_admin ON school_admin (scadmin_id, first_name, last_name);
 -----------------------------------------Triggers-----------------------------------------
-DELIMITER// 
+DELIMITER // 
 --Approving or declining a user
 CREATE TRIGGER user_state AFTER UPDATE ON user FOR EACH ROW
 BEGIN
@@ -220,11 +222,12 @@ BEGIN
     ELSEIF NEW.user_status = 'Declined' THEN 
         DELETE FROM librarydbms.user WHERE user_id = OLD.user_id;
     END IF;
-END;//
+END;
+//
 
-DELIMETER ;
+DELIMITER ;
 
-DELIMITER// 
+DELIMITER // 
 --Approving or declining a school admin
 CREATE TRIGGER scadmin_state AFTER UPDATE ON school_admin FOR EACH ROW
 BEGIN
@@ -235,11 +238,12 @@ BEGIN
     ELSEIF (NEW.scadmin_status = 'Declined')  THEN 
         DELETE FROM librarydbms.school_admin WHERE scadmin_id = OLD.scadmin_id;
     END IF;
-END;//
+END;
+//
 
-DELIMETER ;
+DELIMITER ;
 
-DELIMITER// 
+DELIMITER // 
 --Approving or declining a review
 CREATE TRIGGER review_state AFTER UPDATE ON review FOR EACH ROW
 BEGIN
@@ -250,11 +254,12 @@ BEGIN
     ELSEIF NEW.review_status = 'Declined'  THEN
         DELETE FROM librarydbms.review WHERE review_id = OLD.review_id;
     END IF;
-END;//
+END;
+//
 
-DELIMETER ;
+DELIMITER ;
 
-DELIMITER// 
+DELIMITER // 
 --reservation handler
 CREATE TRIGGER reservation_state AFTER UPDATE ON reservation FOR EACH ROW
 BEGIN
@@ -271,11 +276,12 @@ BEGIN
     ELSEIF (NEW.reservation_status = 'Declined') THEN 
         DELETE FROM reservation WHERE reservation_id = OLD.reservation_id;
     END IF;
-END;//
+END;
+//
 
-DELIMETER ;
+DELIMITER ;
 
-DELIMITER// 
+DELIMITER // 
 --borrowing handler
 CREATE TRIGGER borrowing_state AFTER UPDATE ON borrowing FOR EACH ROW 
 BEGIN
@@ -296,9 +302,10 @@ BEGIN
     ELSEIF NEW.borrowing_status = 'Declined' THEN
         DELETE FROM borrowing WHERE borrowing_id = OLD.borrowing_id;
     END IF; 
-END;//
+END;
+//
 
-DELIMETER ;
+DELIMITER ;
 -----------------------------------------Views-----------------------------------------
 CREATE VIEW administrator_view AS
     SELECT admin_id, login_id, first_name, last_name, birth_date 
@@ -337,8 +344,8 @@ CREATE EVENT too_delayed
 ON SCHEDULE EVERY 1 DAY
 DO
     DELETE FROM librarydbms.reservation 
-    WHERE (DATEDIFF(NOW(), CAST(reservation_date AS DATETIME)) >= 7 AND reservation_status = 'Waiting');
+    WHERE (DATEDIFF(CURRENT_TIMESTAMP, CAST(reservation_date AS DATETIME)) >= 7 AND reservation_status = 'Waiting');
 
 
-------------------------Extras that occured while building the app--------------------------
+------------------------Extras that occured while builidng the app--------------------------
 
