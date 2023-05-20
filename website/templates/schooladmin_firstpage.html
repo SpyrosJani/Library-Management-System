@@ -1,0 +1,76 @@
+{% extends "base.html" %} {% block title %}SchoolAdmin Home Page{% endblock %}
+
+{% block button_header %}
+<style>
+    #topRight {
+        position: fixed;
+        top: 0;
+        right: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="topRight">
+    <a href="/home" class="btn btn-info pull-right" role="button">LogOut</a>
+</div>
+{% endblock %}
+
+{% block navigation %}
+<li class="nav-item">
+    <a class="nav-link" href="/schooladmin/booklist"> Books List </a>
+</li>
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+        Users
+    </a>
+    <div class="dropdown-menu">
+        <a class="dropdown-item" href="/schooladmin/users" data-toggle="tooltip"
+            title="Overview of all approved borrowings"> Users List </a>
+        <a class="dropdown-item" href="/schooladmin/users/pending" data-toggle="tooltip"
+            title="Approve a pending borrowing request"> Pending Users </a>
+    </div>
+</li>
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+        Borrowings
+    </a>
+    <div class="dropdown-menu">
+        <a class="dropdown-item" href="/schooladmin/borrowings/list" data-toggle="tooltip"
+            title="Overview of all approved borrowings"> Borrowings List </a>
+        <a class="dropdown-item" href="/schooladmin/borrowings/pending" data-toggle="tooltip"
+            title="Approve a pending borrowing request"> Pending borrowings </a>
+    </div>
+</li>
+<li class="nav-item dropwdown">
+    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+        Reservations
+    </a>
+    <div class="dropdown-menu">
+        <a class="dropdown-item" href="/schooladmin/reservelist" data-toggle="tooltip"
+            title="Overview of all students and teachers that have reserved a book"> Reservation List </a>
+    </div>
+</li>
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+        Returns
+    </a>
+    <div class="dropdown-menu">
+        <a class="dropdown-item" href="/schooladmin/return/approve" data-toggle="tooltip"
+            title="Approve the return of a book to the library"> Approve returns </a>
+        <a class="dropdown-item" href="/schooladmin/return/overdue" data-toggle="tooltip"
+            title="List of all overdue borrowings"> Overdue returns </a>
+    </div>
+</li>
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+        Book reviews
+    </a>
+    <div class="dropdown-menu">
+        <a class="dropdown-item" href="/schooladmin/reviews/approve" data-toggle="tooltip"
+            title="Approve pendind book reviews from students"> Approve reviews </a>
+        <a class="dropdown-item" href="/schooladmin/reviews/peruser"> Average review per user </a>
+        <a class="dropdown-item" href="/schooladmin/reviews/percategory"> Average review per </br> category </a>
+    </div>
+</li>
+{% endblock %}

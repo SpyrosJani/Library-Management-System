@@ -1,0 +1,80 @@
+{% extends "home_page.html" %} {% block title %}Add a New Book{% endblock %}
+
+{% block button_header %}
+<style>
+#topRight {
+    position: fixed; 
+    top:0;
+    right:0;
+}
+#topLeft {
+    position:fixed;
+    top:0;
+    left:0;
+}
+#nextToRight {
+    position:fixed;
+    top:0;
+    right:100px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+    <div id="topRight">
+        <a href="/home" class = "btn btn-info" role="button">LogOut</a> 
+    </div>
+
+    <div id = "nextToRight"> 
+        <a href = "/schooladmin" class = "btn btn-info" role = "button">Home</a>
+    </div>
+
+    <div class = "container rounded mt-5" style = "color:white; background-color:rgb(33, 46, 46);">
+        <h1>Add a New Book</h1>
+        <form action = "/action_page.php">
+            <div class = "mb-3 mt-3">
+                <label for = "title">Title:</label>
+                <input type = "title" class = "form-control" id = "title" placeholder="Enter title" name = "title">
+            </div>
+            <div class = "mb-3">
+                <label for = "ISBN">ISBN:</label>
+                <input type = "ISBN" class = "form-control" id = "ISBN" placeholder="Enter ISBN" name = "ISBN">
+            </div>
+            <div class = "mb-3">
+                <label for = "author">Author:</label>
+                <input type = "author" class = "form-control" id = "author" placeholder="Enter author" name = "author">
+            </div>
+            <div class = "mb-3">
+                <label for = "publisher">Publisher:</label>
+                <input type = "publisher" class = "form-control" id = "publisher" placeholder="Enter publisher" name = "publisher">
+            </div>
+            <div class = "mb-3">
+                <label for = "page number">Page Number:</label>
+                <input type = "page number" class = "form-control" id = "page number" placeholder="Enter page number" name = "page number">
+            </div>
+            <div class = "mb-3">
+                <label for = "summary">Summary:</label>
+                <input type = "summary" class = "form-control" id = "summary" placeholder="Enter summary" name = "summary">
+            </div>
+            <div class = "mb-3">
+                <label for = "language">Language:</label>
+                <input type = "language" class = "form-control" id = "language" placeholder="Enter language" name = "language">
+            </div>
+            <div class = "mb-3">
+                <label for = "keywords">Keywords:</label>
+                <input type = "keywords" class = "form-control" id = "keywords" placeholder="Enter keywords" name = "keywords">
+            </div>
+            <div class = "mb-3">
+                <label for = "category">Categories:</label>
+                <input type = "category" class = "form-control" id = "category" placeholder="Enter categories" name = "category">
+            </div>
+            <div class = "mb-3">
+                <label for = "cover">Cover:</label>
+                <button type = "button" class = "btn btn-secondary" name="cover">Submit Image</button>
+            </div> 
+            <div style = "text-align:center" class = "mt-3">
+                <button type = "sumbit" class = "btn btn-primary">Add Book</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}

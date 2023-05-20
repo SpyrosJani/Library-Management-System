@@ -1,0 +1,120 @@
+{% extends "home_page.html" %} {% block title %}Books List{% endblock %}
+
+{% block button_header %}
+<style>
+#topRight {
+    position:fixed;
+    top:0;
+    right:0;
+}
+#topLeft {
+    position:fixed;
+    top:0;
+    left:0;
+}
+#nextToRight {
+    position:fixed;
+    top:0;
+    right:100px;
+}
+#search {
+    position:fixed;
+    left:5px;
+    top:5px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+    <div id="topRight">
+        <a href="/home" class = "btn btn-info" role="button">LogOut</a> 
+    </div>
+
+    <div id = "nextToRight"> 
+        <a href = "/user" class = "btn btn-info" role = "button">Home</a>
+    </div>
+
+    <div id = "search">
+        <button class="btn btn-primary" type="submit">Search</button>
+    </div>
+
+    <div class = "container-fluid"> 
+        <table class = "table table-dark table-hover mt-5"> 
+            <thead> 
+                <tr>
+                    <th scope="col" class = "col-2">ISBN</th>
+                    <th scope="col" class = "col-2">Title</th>
+                    <th scope="col" class = "col-2">Author</th>
+                    <th scope="col" class = "col-2">Publisher</th>
+                    <th scope="col" class = "col-2">Page Number</th>
+                    <th scope="col" class = "col-2">Availability</th>
+                    <th scope="col" class = "col-2">Language</th>
+                    <th scope="col" class = "col-3">Cover</th>
+                    <th scope="col" class = "col-3">Borrow/Reserve</th>
+                    <th scope="col" class = "col-2">Review</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td> 
+                        <form class = "d-flex"> 
+                            <input class="form-control me-1" type="search" placeholder="Search ISBN" aria-label="Search">
+                        </form>
+                    </td>
+                    <td> 
+                        <form class = "d-flex"> 
+                            <input class="form-control me-1" type="search" placeholder="Search Title" aria-label="Search">
+                        </form>
+                    </td>
+                    <td> 
+                        <form class = "d-flex"> 
+                            <input class="form-control me-1" type="search" placeholder="Search Author" aria-label="Search">
+                        </form>
+                    </td>
+                    <td> 
+                        <form class = "d-flex"> 
+                            <input class="form-control me-1" type="search" placeholder="Search Publisher" aria-label="Search">
+                        </form>
+                    </td>
+                    <td> 
+                        <form class = "d-flex"> 
+                            <input class="form-control me-1" type="search" placeholder="Search Page No." aria-label="Search">
+                        </form>
+                    </td>
+                    <td> 
+                        <form class = "d-flex"> 
+                            <input class="form-control me-1" type="search" placeholder="Search Availability" aria-label="Search">
+                        
+                        </form>
+                    </td>
+                    <td> 
+                        <form class = "d-flex"> 
+                            <input class="form-control me-1" type="search" placeholder="Search Language" aria-label="Search">
+                        </form>
+                    </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class = "align-middle">978-2-12-345680-3</td>
+                    <td class = "align-middle">Wuthering Heights</td>
+                    <td class = "align-middle">Emily Bronte</td>
+                    <td class = "align-middle">Wordsworth</td>
+                    <td class = "align-middle">256</td>
+                    <td class = "align-middle">3</td>
+                    <td class = "align-middle">English</td>
+                    <td class = "align-middle">Click Here</td>
+                    <td class = "align-middle">
+                        <button type = "button" class = "btn btn-outline-success">Borrow</button>
+                        <button type = "button" class = "btn btn-outline-warning">Reserve</button>
+                     
+                    </td>
+                    <td class = "align-middle">
+                        <a class = "btn btn-outline-light" href = "/user/booklist/review">Write Review</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

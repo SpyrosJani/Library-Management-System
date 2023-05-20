@@ -1,0 +1,43 @@
+{% extends "home_page.html" %} {% block title %}Average Review per User{% endblock %}
+
+{% block button_header %}
+<style>
+#topRight {
+    position:fixed;
+    top:0;
+    right:0;
+}
+#topLeft {
+    position:fixed;
+    top:0;
+    left:0;
+}
+#nextToRight {
+    position:fixed;
+    top:0;
+    right:100px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+    <div id="topRight">
+        <a href="/home" class = "btn btn-info" role="button">LogOut</a> 
+    </div>
+
+    <div id = "nextToRight"> 
+        <a href = "/schooladmin" class = "btn btn-info" role = "button">Home</a>
+    </div>
+
+    <div class = "container"> 
+        <table class = "table table-dark table-hover mt-5"> 
+            <thead> 
+                <tr>
+                    <th scope="col" class = "col-2">User First Name</th>
+                    <th scope="col" class = "col-2">User Last Name</th>
+                    <th scope="col" class = "col-2">Average Review</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+{% endblock %}

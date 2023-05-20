@@ -1,0 +1,50 @@
+{% extends "home_page.html" %} {% block title %}School List{% endblock %}
+
+{% block button_header %}
+<style>
+#topRight {
+    position:fixed;
+    top:0;
+    right:0;
+}
+#topLeft {
+    position:fixed;
+    top:0;
+    left:0;
+}
+#nextToRight {
+    position:fixed;
+    top:0;
+    right:100px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+    <div id="topRight">
+        <a href="/home" class = "btn btn-info" role="button">LogOut</a> 
+    </div>
+
+    <div id = "topLeft"> 
+        <a href="/admin/schoollist/add" class = "btn btn-info" role = "button">Add a new school</a>
+    </div>
+
+    <div id = "nextToRight"> 
+        <a href = "/admin" class = "btn btn-info" role = "button">Home</a>
+    </div>
+
+    <div class = "container"> 
+        <table class = "table table-dark table-hover mt-5"> 
+            <thead> 
+                <tr>
+                    <th scope="col" class = "col-2">School Name</th>
+                    <th scope="col" class = "col-2">City</th>
+                    <th scope="col" class = "col-2">Address</th>
+                    <th scope="col" class = "col-2">Phone Number</th>
+                    <th scope="col" class = "col-2">E-mail Address</th>
+                    <th scope="col" class = "col-2">School Library Admin</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+{% endblock %}
