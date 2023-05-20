@@ -168,6 +168,9 @@ def sign_up():
     return render_template("sign_up.html", school = schools)
 #----------------------------------SIGN UP----------------------------------
 
+
+
+#---------------------USER TEMPLATES-------------------------
 @routes.route('/user')
 def user(): 
     return render_template('user_firstpage.html')
@@ -195,4 +198,78 @@ def profile_teacher():
 @routes.route('/user/reviews')
 def user_reviews():
     return render_template('user_reviews.html')
+#-----------------USER TEMPLATES-------------------------------------
 
+
+#-----------------ADMIN TEMPLATES-----------------------------------
+@routes.route('/admin')
+def admin(): 
+    return render_template('admin_firstpage.html')
+
+@routes.route('/admin/schoollist')
+def admin_schoollist(): 
+    return render_template('admin_schoolList.html')
+
+@routes.route('/admin/pending')
+def admin_pending(): 
+    return render_template('admin_pending.html')
+
+@routes.route('/admin/schoollist/add')
+def admin_addschool():
+    return render_template('admin_addschool.html')
+#----------------ADMIN TEMPLATES------------------------------------
+
+
+#---------------SCHOOL ADMIN TEMPLATES------------------------------
+@routes.route('/schooladmin')
+def schooladmin():
+    return render_template('schooladmin_firstpage.html')
+
+@routes.route('/schooladmin/booklist')
+def schooladmin_booklist(): 
+    return render_template('schooladmin_booklist.html')
+
+@routes.route('/schooladmin/booklist/add')
+def schooladmin_addbook():
+    return render_template('schooladmin_addbook.html')
+
+@routes.route('/schooladmin/users')
+def schooladmin_userslist():
+    return render_template('schooladmin_userslist.html')
+
+@routes.route('/schooladmin/users/pending')
+def schooladmin_pendingusers():
+    return render_template('schooladmin_pendingusers.html')
+
+@routes.route('/schooladmin/borrowings/list')
+def schooladmin_borrowlist():
+    return render_template('schooladmin_borrowlist.html')
+
+@routes.route('/schooladmin/borrowings/pending')
+def schooladmin_pendingborrowings():
+    return render_template('schooladmin_pendingborrowings.html')
+
+@routes.route('/schooladmin/reservelist')
+def schooladmin_reservelist():
+    return render_template('schooladmin_reservelist.html')
+
+@routes.route('/schooladmin/return/approve')
+def schooladmin_approvereturn():
+    return render_template('schooladmin_returnapprove.html')
+
+@routes.route('/schooladmin/return/overdue')
+def schooladmin_overduereturn():
+    return render_template('schooladmin_returnoverdue.html')
+
+@routes.route('/schooladmin/reviews/approve')
+def schooladmin_approvereviews():
+    return render_template('schooladmin_approvereview.html')
+
+@routes.route('/schooladmin/reviews/peruser')
+def schooladmin_reviewperuser():
+    return render_template('schooladmin_reviewperuser.html')
+
+@routes.route('/schooladmin/reviews/percategory')
+def schooladmin_reviewpercategory():
+    return render_template('schooladmin_reviewpercategory.html')
+#-----------------SCHOOL ADMIN TEMPLATES-------------------------------
