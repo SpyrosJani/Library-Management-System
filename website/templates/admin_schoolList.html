@@ -1,0 +1,86 @@
+{% extends "home_page.html" %} {% block title %}School List{% endblock %}
+
+{% block button_header %}
+<style>
+#topRight {
+    position:fixed;
+    top:0;
+    right:0;
+}
+#topLeft {
+    position:fixed;
+    top:0;
+    left:0;
+}
+#nextToRight {
+    position:fixed;
+    top:0;
+    right:100px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+    <div id="topRight">
+        <a href="/home" class = "btn btn-info" role="button">LogOut</a> 
+    </div>
+
+    <div id = "topLeft"> 
+        <a href="/admin/schoollist/add" class = "btn btn-info" role = "button">Add a new school</a>
+    </div>
+
+    <div id = "nextToRight"> 
+        <a href = "/admin" class = "btn btn-info" role = "button">Home</a>
+    </div>
+
+    <div class = "container"> 
+        <table class = "table table-dark table-hover mt-5"> 
+            <thead> 
+                <tr>
+                    <th scope="col" class = "col-2">School Name</th>
+                    <th scope="col" class = "col-2">City</th>
+                    <th scope="col" class = "col-2">Address</th>
+                    <th scope="col" class = "col-2">Phone Number</th>
+                    <th scope="col" class = "col-2">E-mail Address</th>
+                    <th scope="col" class = "col-1">Update</th>
+                    <th scope="col" class = "col-1">Delete</th>
+                </tr>
+            </thead>
+            {% for i in school %}
+                <thead> 
+                    <tr>
+                        <td class="align-middle"><div contenteditable id="editable_{{i[5]}}_0">{{i[0]}}</div></td>
+                        <td class="align-middle"><div contenteditable id="editable_{{i[5]}}_1">{{i[1]}}</div></td>
+                        <td class="align-middle"><div contenteditable id="editable_{{i[5]}}_2">{{i[2]}}</div></td>
+                        <td class="align-middle"><div contenteditable id="editable_{{i[5]}}_3">{{i[3]}}</div></td>
+                        <td class="align-middle"><div contenteditable id="editable_{{i[5]}}_4">{{i[4]}}</div></td>
+                        <td class="align-middle"><a href = "/admin/schoollist" class="btn btn-info" role = "button" onclick="handle_Click_Update(document.getElementById('editable_{{i[5]}}_0').textContent, document.getElementById('editable_{{i[5]}}_1').textContent, document.getElementById('editable_{{i[5]}}_2').textContent, document.getElementById('editable_{{i[5]}}_3').textContent, document.getElementById('editable_{{i[5]}}_4').textContent, '{{i[5]}}')">Update</a></td>
+                        <td class="align-middle"><a href = "/admin/schoollist" class="btn btn-outline-danger" role = "button" onclick="handle_Click_Delete('{{i[5]}}')">Delete</a></td>
+                    </tr>
+                </thead>
+            {% endfor %}
+        </table>
+    </div>
+<script>
+    function handle_Click_Update(par0, par1, par2, par3, par4, par5) {
+        var formData = new FormData();
+        formData.append('update_button', [par0, par1, par2, par3, par4, par5]);
+        
+        fetch('/admin_schoollist_update', {
+        method: 'POST',
+        body: formData
+        });
+    }
+</script>
+<script>
+    function handle_Click_Delete(buttonId) {
+      var formData = new FormData();
+      formData.append('delete_button', buttonId);
+        
+      fetch('/admin_schoollist_delete', {
+        method: 'POST',
+        body: formData
+      });
+    }
+</script>
+{% endblock %}
