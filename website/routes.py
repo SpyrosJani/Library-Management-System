@@ -4,15 +4,27 @@ import mysql.connector as sql
 from datetime import datetime
 from os import abort
 import time
+import yaml
+from yaml.loader import SafeLoader
 
-global id 
-id  = -1
 routes = Blueprint('routes', __name__)
 
+with open('data.yaml', 'r') as file:
+    config = yaml.load(file, Loader = SafeLoader)
+
+host = config['host']
+user = config['user']
+password = config['password']
+database = config['database']
 
 #----------------------------------HOME PAGE----------------------------------
 @routes.route('/')
 def index():
+    global admin_access, sadmin_access
+    admin_access = False
+    sadmin_access = False
+    session['connected'] = False
+    session['id'] = -1
     directory = '/static_images/library.jpg'
     return render_template('home_page.html', image = directory ,pageTitle = "Welcome!")
 
@@ -24,7 +36,7 @@ def login():
             email = request.form.get('email')
             password = request.form.get('password')
             role = str(request.form.get('Role'))
-            connection = sql.connect(host = 'localhost', database = 'librarydbms', user = 'root') 
+            connection = sql.connect(host = host, database = database, user = user, password = password) 
             cursor = connection.cursor() 
             if(role == 'Student' or role == 'Teacher'):
                 query = ("SELECT user.user_id FROM user WHERE (login_id = '{}' AND passwd = '{}' AND job = '{}');".format(email, password, role))
@@ -85,7 +97,7 @@ def logout():
 def sign_up():
     try:
         #---------Database connection------------
-        connection = sql.connect(host = 'localhost', database = 'librarydbms', user = 'root') 
+        connection = sql.connect(host = 'localhost', database = 'librarydbms', user = 'root', password = 'password') 
         cursor = connection.cursor() 
         query = ('SELECT school.school_name FROM school')
         cursor.execute(query)
@@ -178,17 +190,24 @@ def sign_up():
 def user(): 
     return render_template('user_firstpage.html')
 
-@routes.route('/user/booklist')
-def user_booklist():
-    return render_template('user_booklist.html')
+@routes.route('/user/booksearch')
+def user_booksearch():
+    connection = sql.connect(host = host, user = user, password = password, database = database)
+    cursor = connection.cursor()
+    query = "SELECT * FROM book"
+    cursor.execute(query)
+    book_list = cursor.fetchall()
+    cursor.close()
 
-@routes.route('/user/booklist/review')
+    return render_template('user_booksearch.html', book_list = book_list)
+
+@routes.route('/user/booksearch/review')
 def review(): 
     return render_template('review_form.html')
 
-@routes.route('/user/books')
+@routes.route('/user/borrowings')
 def books():
-    return render_template('user_books.html')
+    return render_template('user_borrowings.html')
 
 @routes.route('/user/profile_student')
 def profile_student():
