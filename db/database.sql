@@ -22,7 +22,7 @@ CREATE TABLE school(
     school_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     school_name VARCHAR(50) NOT NULL,
     city VARCHAR(50) NOT NULL,
-    phone_number INT NOT NULL,
+    phone_number VARCHAR(50) NOT NULL,
     email VARCHAR(50) NOT NULL,
     addrss VARCHAR(50) NOT NULL,
     admin_id INT UNSIGNED DEFAULT NULL,
@@ -70,11 +70,16 @@ CREATE TABLE user(
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
     birth_date DATE NOT NULL,
-    school_name NVARCHAR(50) NOT NULL,
+    school_id INT UNSIGNED NOT NULL,
+    sex ENUM('Male', 'Female', 'Other') NOT NULL,
     job ENUM('Student', 'Teacher') NOT NULL,
     books_borrowed INT UNSIGNED NOT NULL DEFAULT 0,
     user_status ENUM('Waiting', 'Approved', 'Declined') NOT NULL DEFAULT 'Waiting',
     PRIMARY KEY (user_id),
+    CONSTRAINT fk_user_school 
+        FOREIGN KEY (school_id) REFERENCES school(school_id)
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE,
     UNIQUE (login_id),
     CHECK ((birth_date < '2018-01-01' AND job = 'Student') OR (birth_date < '2000-01-01' AND job = 'Teacher'))
 );
@@ -82,7 +87,8 @@ CREATE TABLE user(
 
 --book(ISBN, book_title, publisher, no_pages, summary, available, img, sprache, school_id, scadmin_id)
 CREATE TABLE book(
-    ISBN INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    ISBN VARCHAR(50) NOT NULL,
+    school_id INT UNSIGNED NOT NULL,
     book_title VARCHAR(100) NOT NULL,
     publisher VARCHAR(50) NOT NULL,
     no_pages INT UNSIGNED NOT NULL,
@@ -90,9 +96,8 @@ CREATE TABLE book(
     available INT UNSIGNED NOT NULL DEFAULT 1,
     img LONGBLOB, 
     sprache VARCHAR(50) DEFAULT 'English',
-    school_id INT UNSIGNED NOT NULL,
     scadmin_id INT UNSIGNED DEFAULT NULL,
-    PRIMARY KEY (ISBN),
+    PRIMARY KEY (ISBN, school_id),
     CONSTRAINT fk_book_school
         FOREIGN KEY (school_id) REFERENCES school(school_id) 
         ON DELETE CASCADE 
@@ -106,12 +111,13 @@ CREATE TABLE book(
 --review(review_id, ISBN, user_id, review_date, txt, likert, review_status)
 CREATE TABLE review(
     review_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    ISBN INT UNSIGNED NOT NULL,
+    ISBN VARCHAR(50) NOT NULL,
     user_id INT UNSIGNED NOT NULL,
     review_date DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     txt TEXT NOT NULL,
     likert VARCHAR(50) DEFAULT NULL,
     review_status ENUM('Waiting', 'Approved', 'Declined') NOT NULL DEFAULT 'Waiting',
+    school_id INT UNSIGNED NOT NULL,
     PRIMARY KEY (review_id),
     CONSTRAINT fk_review_book
         FOREIGN KEY (ISBN) REFERENCES book(ISBN) 
@@ -119,6 +125,10 @@ CREATE TABLE review(
         ON UPDATE CASCADE,
     CONSTRAINT fk_review_user 
         FOREIGN KEY (user_id) REFERENCES user(user_id) 
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE,
+    CONSTRAINT fk_review_school 
+        FOREIGN KEY (school_id) REFERENCES school(school_id)
         ON DELETE CASCADE 
         ON UPDATE CASCADE
 );
@@ -128,7 +138,7 @@ CREATE TABLE author(
     author_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
-    ISBN INT UNSIGNED NOT NULL,
+    ISBN VARCHAR(50) NOT NULL,
     PRIMARY KEY (author_id), 
     CONSTRAINT fk_author_book
         FOREIGN KEY (ISBN) REFERENCES book(ISBN) 
@@ -140,7 +150,7 @@ CREATE TABLE author(
 CREATE TABLE category(
     category_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     category VARCHAR(50) NOT NULL,
-    ISBN INT UNSIGNED NOT NULL,
+    ISBN VARCHAR(50) NOT NULL,
     PRIMARY KEY (category_id),
     CONSTRAINT fk_category_book
         FOREIGN KEY (ISBN) REFERENCES book(ISBN) 
@@ -152,7 +162,7 @@ CREATE TABLE category(
 CREATE TABLE keywords(
     keyword_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     keyword VARCHAR(20) NOT NULL,
-    ISBN INT UNSIGNED NOT NULL,
+    ISBN VARCHAR(50) NOT NULL,
     PRIMARY KEY (keyword_id),
     CONSTRAINT fk_keywords_book
         FOREIGN KEY (ISBN) REFERENCES book(ISBN) 
@@ -163,10 +173,12 @@ CREATE TABLE keywords(
 --reservation(reservation_id, ISBN, user_id, reservation_date, reservation_status)
 CREATE TABLE reservation(
     reservation_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    ISBN INT UNSIGNED NOT NULL,
+    ISBN VARCHAR(50) NOT NULL,
     user_id INT UNSIGNED NOT NULL,
     reservation_date DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    reservation_status ENUM('Waiting', 'Approved', 'Declined') NOT NULL DEFAULT 'Waiting',
+    reservation_to_date DATE NOT NULL,
+    reservation_status ENUM('Waiting Queue', 'Waiting', 'Declined', 'Approved') NOT NULL DEFAULT 'Waiting',
+    scadmin_id INT UNSIGNED NOT NULL,
     PRIMARY KEY (reservation_id),
     CONSTRAINT fk_reservation_book
         FOREIGN KEY (ISBN) REFERENCES book(ISBN) 
@@ -175,13 +187,17 @@ CREATE TABLE reservation(
     CONSTRAINT fk_reservation_user
         FOREIGN KEY (user_id) REFERENCES user(user_id) 
         ON DELETE CASCADE 
+        ON UPDATE CASCADE,
+    CONSTRAINT fk_reservation_scadmin 
+        FOREIGN KEY (scadmin_id) REFERENCES school_admin(scadmin_id)
+        ON DELETE CASCADE 
         ON UPDATE CASCADE
 );
 
 --borrowing(borrowing_id, ISBN, user_id, borrowing_date, borrowing_status, scadmin_id)
 CREATE TABLE borrowing(
     borrowing_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    ISBN INT UNSIGNED NOT NULL,
+    ISBN VARCHAR(50) NOT NULL,
     user_id INT UNSIGNED NOT NULL,
     borrowing_date DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     borrowing_status ENUM('Waiting', 'Approved', 'Declined', 'Completed') DEFAULT 'Waiting',
@@ -211,100 +227,89 @@ CREATE INDEX idx_borrowing ON borrowing (ISBN, user_id, borrowing_date, borrowin
 CREATE INDEX idx_book ON book (ISBN, book_title, school_id, scadmin_id);
 CREATE INDEX idx_school_admin ON school_admin (scadmin_id, first_name, last_name);
 -----------------------------------------Triggers-----------------------------------------
-DELIMITER // 
---Approving or declining a user
-CREATE TRIGGER user_state AFTER UPDATE ON user FOR EACH ROW
+DELIMITER //
+CREATE PROCEDURE borrowing_helper()   
+    COMMENT 'Borrow helper'
 BEGIN
-    IF NEW.user_status = 'Approved' THEN 
-        UPDATE user
-            SET user_status = NEW.user_status
-        WHERE user_id = OLD.user_id;
-    ELSEIF NEW.user_status = 'Declined' THEN 
-        DELETE FROM librarydbms.user WHERE user_id = OLD.user_id;
-    END IF;
-END;
-//
+    DECLARE auxiliary INT;
+    DECLARE avail INT;
 
-DELIMITER ;
-
-DELIMITER // 
---Approving or declining a school admin
-CREATE TRIGGER scadmin_state AFTER UPDATE ON school_admin FOR EACH ROW
-BEGIN
-    IF NEW.scadmin_status = 'Approved'  THEN 
-        UPDATE school_admin
-            SET scadmin_status = NEW.scadmin_status
-        WHERE scadmin_id = OLD.scadmin_id;
-    ELSEIF (NEW.scadmin_status = 'Declined')  THEN 
-        DELETE FROM librarydbms.school_admin WHERE scadmin_id = OLD.scadmin_id;
-    END IF;
-END;
-//
-
-DELIMITER ;
-
-DELIMITER // 
---Approving or declining a review
-CREATE TRIGGER review_state AFTER UPDATE ON review FOR EACH ROW
-BEGIN
-    IF NEW.review_status = 'Approved'  THEN 
-        UPDATE review
-            SET review_status = NEW.review_status
-        WHERE review_id = OLD.review_id;
-    ELSEIF NEW.review_status = 'Declined'  THEN
-        DELETE FROM librarydbms.review WHERE review_id = OLD.review_id;
-    END IF;
-END;
-//
-
-DELIMITER ;
-
-DELIMITER // 
---reservation handler
-CREATE TRIGGER reservation_state AFTER UPDATE ON reservation FOR EACH ROW
-BEGIN
-    IF (NEW.reservation_status = 'Approved') THEN
-        INSERT INTO borrowing(borrowing_id, ISBN, user_id, borrowing_date, borrowing_status)
-        VALUES (NEW.reservation_id, OLD.ISBN, OLD.user_id, CURRENT_TIMESTAMP, 'Approved');
-        UPDATE user 
-            SET user.books_borrowed = user.books_borrowed+1
-        WHERE user.user_id = OLD.user_id;
-        UPDATE book
-            SET book.available = book.available-1
-        WHERE book.ISBN = OLD.ISBN;
-        DELETE FROM reservation WHERE reservation_id = OLD.reservation_id;
-    ELSEIF (NEW.reservation_status = 'Declined') THEN 
-        DELETE FROM reservation WHERE reservation_id = OLD.reservation_id;
-    END IF;
-END;
-//
-
-DELIMITER ;
-
-DELIMITER // 
---borrowing handler
-CREATE TRIGGER borrowing_state AFTER UPDATE ON borrowing FOR EACH ROW 
-BEGIN
     IF NEW.borrowing_status = 'Approved' THEN
-        UPDATE user 
-            SET user.books_borrowed = user.books_borrowed+1
-        WHERE user.user_id = OLD.user_id;
-        UPDATE book
-            SET book.available = book.available-1
-        WHERE book.ISBN = OLD.ISBN;
-    ELSEIF NEW.borrowing_status = 'Completed' THEN 
-        UPDATE user 
-            SET user.books_borrowed = user.books_borrowed-1
-        WHERE user.user_id = OLD.user_id;
-        UPDATE book
-            SET book.available = book.available+1
-        WHERE book.ISBN = OLD.ISBN;
-    ELSEIF NEW.borrowing_status = 'Declined' THEN
-        DELETE FROM borrowing WHERE borrowing_id = OLD.borrowing_id;
+        SELECT school_id 
+        INTO auxiliary
+        FROM borrowing 
+        INNER JOIN school_admin ON borrowing.scadmin_id = school_admin.scadmin_id 
+        INNER JOIN school ON school_admin.school_id = school.school_id;
+
+        SELECT available 
+        INTO avail
+        FROM book 
+        WHERE (book.ISBN = OLD.ISBN AND book.school_id = auxiliary);
+
+        IF avail = 0 THEN
+            INSERT INTO reservation(ISBN, user_id, reservation_date, reservation_to_date, reservation_status, scadmin_id)
+            VALUES (OLD.ISBN, OLD.user_id, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 'Waiting Queue', OLD.scadmin_id);
+            DELETE FROM borrowing WHERE borrowing_id = OLD.borrowing_id; 
+        ELSEIF avail > 0 THEN 
+            UPDATE user 
+            SET books_borrowed = books_borrowed + 1
+            WHERE user_id = OLD.user_id;
+
+            UPDATE book 
+            SET available = available + 1
+            WHERE ISBN = OLD.ISBN AND school_id = auxiliary;
+        END IF;
     END IF; 
 END;
 //
+DELIMITER ;
 
+DELIMITER //
+CREATE TRIGGER reservation_state AFTER UPDATE ON reservation FOR EACH ROW
+BEGIN
+    DECLARE auxiliary INT;
+    DECLARE avail INT;
+
+    IF (NEW.reservation_status = 'Approved') THEN
+        SELECT school_id 
+        INTO auxiliary
+        FROM reservation 
+        INNER JOIN school_admin ON reservation.scadmin_id = school_admin.scadmin_id 
+        INNER JOIN school ON school_admin.school_id = school.school_id;
+
+        SELECT available 
+        INTO avail
+        FROM book 
+        WHERE (book.ISBN = NEW.ISBN AND book.school_id = auxiliary);
+
+        IF avail = 0 THEN 
+            UPDATE reservation
+            SET reservation_status = 'Waiting Queue'
+            WHERE reservation_id = NEW.reservation_id;
+        ELSEIF avail > 0 THEN 
+            INSERT INTO borrowing(ISBN, user_id, borrowing_date, borrowing_status, scadmin_id)
+            VALUES (NEW.ISBN, NEW.user_id, CURRENT_TIMESTAMP(), 'Approved', NEW.scadmin_id);
+            DELETE FROM reservation WHERE reservation_id = NEW.reservation_id; 
+        END IF;
+    END IF;
+END
+//
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER borrowing_state_update AFTER UPDATE ON borrowing FOR EACH ROW 
+BEGIN
+    CALL borrowing_helper();
+END
+//
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER borrowing_state_insert AFTER INSERT ON borrowing FOR EACH ROW 
+BEGIN
+    CALL borrowing_helper();
+END
+//
 DELIMITER ;
 -----------------------------------------Views-----------------------------------------
 CREATE VIEW administrator_view AS
@@ -345,7 +350,5 @@ ON SCHEDULE EVERY 1 DAY
 DO
     DELETE FROM librarydbms.reservation 
     WHERE (DATEDIFF(CURRENT_TIMESTAMP, CAST(reservation_date AS DATETIME)) >= 7 AND reservation_status = 'Waiting');
-
-
 ------------------------Extras that occured while builidng the app--------------------------
 

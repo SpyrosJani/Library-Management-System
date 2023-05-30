@@ -2,94 +2,148 @@
 
 {% block button_header %}
 <style>
-#topRight {
-    position:fixed;
-    top:0;
-    right:0;
-}
-#topLeft {
-    position:fixed;
-    top:0;
-    left:0;
-}
-#nextToRight {
-    position:fixed;
-    top:0;
-    right:100px;
-}
-#search {
-    position:fixed;
-    left:0;
-    top:97px;
-}
+    #topRight {
+        position: fixed;
+        top: 0;
+        right: 0;
+    }
+
+    #topLeft {
+        position: fixed;
+        top: 0;
+        left: 0;
+    }
+
+    #nextToRight {
+        position: fixed;
+        top: 0;
+        right: 100px;
+    }
+
+    #search {
+        position: fixed;
+        left: 175px;
+        top: 0px;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-    <div id="topRight">
-        <a href="/home" class = "btn btn-info" role="button">LogOut</a> 
-    </div>
+<div class="form-outline" style = "display:table;" id="search">
+    <form action="/schooladmin/booklist" method="POST">
+        <div style = "display: table-cell;">
+            <input type="search" class="form-control" id="find_book" placeholder="Search book title" name="search_book">
+        </div>
+        <div style = "display: table-cell;">
+            <input type="search" class="form-control" id="find_author" placeholder="Search author" name="search_author">    
+        </div>
+        <div style = "display: table-cell;">
+            <input type="search" class="form-control" id="find_availability" placeholder="Search availability" name="search_availability">
+        </div>
+        <div style = "display: table-cell;">
+            <input type="search" class="form-control" id="find_category" placeholder="Search category" name="search_category">   
+        </div>
+        <div style = "display: table-cell;">
+            <button type="submit" class="btn btn-light">Search</button>
+        </div>
+    </form>
+</div>
+<div id="topRight">
+    <a href="/" class="btn btn-info" role="button">LogOut</a>
+</div>
 
-    <div id = "topLeft"> 
-        <a href="/schooladmin/booklist/add" class = "btn btn-info" role = "button">Add a new book</a>
-    </div>
+<div id="topLeft">
+    <a href="/schooladmin/booklist/add" class="btn btn-info" role="button">Add a new book</a>
+</div>
 
-    <div id = "nextToRight"> 
-        <a href = "/schooladmin" class = "btn btn-info" role = "button">Home</a>
-    </div>
+<div id="nextToRight">
+    <a href="/schooladmin" class="btn btn-info" role="button">Home</a>
+</div>
 
-    <div id = "search">
-        <button class="btn btn-primary" type="submit">Search</button>
-    </div>
 
-    <div class = "container"> 
-        <table class = "table table-dark table-hover mt-5"> 
-            <thead> 
-                <tr>
-                    <th scope="col" class = "col-2">ISBN</th>
-                    <th scope="col" class = "col-2">Title</th>
-                    <th scope="col" class = "col-2">Publisher</th>
-                    <th scope="col" class = "col-2">Page Number</th>
-                    <th scope="col" class = "col-2">Availability</th>
-                    <th scope="col" class = "col-2">Language</th>
-                    <th scope="col" class = "col-3">Cover</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td> 
-                        <form class = "d-flex"> 
-                            <input class="form-control me-1" type="search" placeholder="Search ISBN" aria-label="Search">
-                        </form>
-                    </td>
-                    <td> 
-                        <form class = "d-flex"> 
-                            <input class="form-control me-1" type="search" placeholder="Search Title" aria-label="Search">
-                        </form>
-                    </td>
-                    <td> 
-                        <form class = "d-flex"> 
-                            <input class="form-control me-1" type="search" placeholder="Search Publisher" aria-label="Search">
-                        </form>
-                    </td>
-                    <td> 
-                        <form class = "d-flex"> 
-                            <input class="form-control me-1" type="search" placeholder="Search Page No." aria-label="Search">
-                        </form>
-                    </td>
-                    <td> 
-                        <form class = "d-flex"> 
-                            <input class="form-control me-1" type="search" placeholder="Search Availability" aria-label="Search">
-                        
-                        </form>
-                    </td>
-                    <td> 
-                        <form class = "d-flex"> 
-                            <input class="form-control me-1" type="search" placeholder="Search Language" aria-label="Search">
-                        </form>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+
+<div class="container">
+    <table class="table table-dark table-hover mt-5">
+        <thead>
+            <tr>
+                <th scope="col" class="col-1">ISBN</th>
+                <th scope="col" class="col-2">Title</th>
+                <th scope="col" class="col-2">Author(s)</th>
+                <th scope="col" class="col-2">Publisher</th>
+                <th scope="col" class="col-2">Page Number</th>
+                <th scope="col" class="col-2">Availability</th>
+                <th scope="col" class="col-1">Update</th>
+                <th scope="col" class="col-1">Delete</th>
+                <th scope="col" class="col-1">View Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in books %}
+            <tr>
+                <td class="align-middle">
+                    {{i[0]}}
+                </td>
+                <td class="align-middle">
+                    {{i[1]}}
+                </td>
+                <td class="align-middle">
+                    {{i[2]+' '+i[3]}}
+                </td>
+                <td class="align-middle">
+                    {{i[4]}}
+                </td>
+                <td class="align-middle">
+                    {{i[5]}}
+                </td>
+                <td class="align-middle">
+                    <div contenteditable id="editable_{{i[5]}}_5">{{i[6]}}</div>
+                </td>
+                <td class="align-middle">
+                    <a href = "/schooladmin/booklist" class="btn btn-info" role = "button" onclick="handle_Click_Update(document.getElementById('editable_{{i[5]}}_5').textContent, '{{i[0]}}')">Update</a>
+                </td>
+                <td class="align-middle">
+                    <a href = "/schooladmin/booklist" class="btn btn-outline-danger" role = "button" onclick="handle_Click_Delete('{{i[0]}}')">Delete</a>
+                </td>
+                <td class="align-middle">
+                    <a href = "/schooladmin/booklist/details" class="btn btn-info" role = "button" onclick="handle_Click_Details('{{i[0]}}')">Details</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function handle_Click_Update(num, buttonId) {
+        var formData = new FormData();
+        formData.append('update_button', [buttonId, num]);
+        
+        fetch('/schooladmin/booklist/update', {
+        method: 'POST',
+        body: formData
+        });
+    }
+</script>
+<script>
+    function handle_Click_Delete(buttonId) {
+      var formData = new FormData();
+      formData.append('delete_button', buttonId);
+        
+      fetch('/schooladmin/booklist/delete', {
+        method: 'POST',
+        body: formData
+      });
+    }
+</script>
+<script>
+    function handle_Click_Details(buttonId) {
+      var formData = new FormData();
+      formData.append('details_button', buttonId);
+        
+      fetch('/schooladmin/booklist/details', {
+        method: 'POST',
+        body: formData
+      });
+    }
+</script>
 {% endblock %}

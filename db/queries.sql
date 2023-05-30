@@ -1,3 +1,106 @@
+---------------------------------------USER_BOOKSEARCH--------------------------------
+DELIMITER //
+    CREATE DEFINER='root'@'localhost' PROCEDURE search_book(
+        IN which_title VARCHAR(50),
+        IN which_author_name VARCHAR(50),
+        IN which_category VARCHAR(50),
+        IN schoolid INT
+    )
+        READS SQL DATA
+        COMMENT 'Search Book'
+    BEGIN
+        SELECT book.ISBN, book.book_title, author.first_name, author.last_name, book.publisher, book.no_pages, book.available, book.sprache, book.img, category.category
+        FROM book
+        INNER JOIN author ON book.ISBN = author.ISBN
+        INNER JOIN category ON book.ISBN = category.ISBN
+        INNER JOIN keywords ON book.ISBN = keywords.ISBN
+        WHERE ((which_title = '' OR book.book_title LIKE CONCAT('%', which_title, '%')) AND
+                (which_author_name = '' OR
+                (author.first_name LIKE CONCAT('%', which_author_name, '%')) OR
+                (author.last_name LIKE CONCAT('%', which_author_name, '%')) OR
+                (CONCAT(author.first_name, ' ', author.last_name) LIKE CONCAT('%', which_author_name, '%'))) AND
+                (which_category = '' OR
+                EXISTS (SELECT * FROM category WHERE (category.ISBN = book.ISBN AND category.category = which_category))) AND
+                (book.school_id = schoolid))
+        ORDER BY book.book_title;
+    END;
+
+//
+DELIMITER ;
+
+-- -------------------------------------SCADMIN_BOOKLIST--------------------------------
+DELIMITER //
+    CREATE DEFINER='root'@'localhost' PROCEDURE booklist(
+        IN which_title VARCHAR(50),
+        IN which_author_name VARCHAR(50),
+        IN which_category VARCHAR(50),
+        IN which_availabiliity INT,
+        IN schoolid INT
+    )   
+        READS SQL DATA
+        COMMENT 'Booklist'
+    BEGIN
+        SELECT book.ISBN, book.book_title, author.first_name, author.last_name, book.publisher, book.no_pages, book.available, book.sprache, book.img 
+        FROM book 
+        INNER JOIN author ON book.ISBN = author.ISBN
+        WHERE ((which_title = '' OR book.book_title LIKE CONCAT('%', which_title, '%')) AND
+                (which_author_name = '' OR
+                (author.first_name LIKE CONCAT('%', which_author_name, '%')) OR
+                (author.last_name LIKE CONCAT('%', which_author_name, '%')) OR
+                (CONCAT(author.first_name, ' ', author.last_name) LIKE CONCAT('%', which_author_name, '%'))) AND
+                 (which_availabiliity = -1 OR book.available = which_availabiliity) AND
+                 (which_category = '' OR 
+                  EXISTS(SELECT * FROM category WHERE (category.ISBN = book.ISBN AND category.category = which_category))) AND
+                  (book.school_id = schoolid))
+        ORDER BY book.title;
+    END;
+//
+DELIMITER ;
+
+-------------------------------------BOOK DETAILS----------------------------------------------------
+DELIMITER //
+    CREATE DEFINER='root'@'localhost' PROCEDURE details(
+        IN ISBN INT,
+        IN school_id INT
+    )
+        READS SQL DATA
+        COMMENT 'Details'
+    BEGIN 
+        SELECT book.book_title, author.first_name, author.last_name, book.publisher, book.summary, book.no_pages, category.category, keywords.keywords, book.sprache, book.ISBN, book.img
+        FROM book 
+        INNER JOIN author ON author.ISBN = book.ISBN
+        INNER JOIN category ON category.ISBN = book.ISBN 
+        INNER JOIN keywords ON keywords.ISBN = book.ISBN 
+        WHERE ( (book.ISBN = ISBN) AND (book.school_id = school_id) );
+    END;
+//
+DELIMITER ;
+
+-------------------------------------USERS LIST---------------------------------------------------------
+DELIMITER //
+    CREATE DEFINER='root'@'localhost' PROCEDURE userlist(
+        IN which_user VARCHAR(50),
+        IN schoolid INT,
+        IN user_status VARCHAR(50)
+    )   
+        READS SQL DATA
+        COMMENT 'Userlist'
+    BEGIN
+        SELECT user.first_name, user.last_name, user.job, user.birth_date, user.books_borrowed, user.user_status, user.user_id
+        FROM user 
+        WHERE ( (which_user = '' OR
+                (user.first_name LIKE CONCAT('%', which_user, '%')) OR
+                (user.last_name LIKE CONCAT('%', which_user, '%')) OR
+                (CONCAT(user.first_name, ' ', user.last_name) LIKE CONCAT('%', which_user, '%'))) AND
+                (user.school_id = schoolid) AND 
+                (user.user_status = user_status))
+        ORDER BY user.last_name;
+    END;
+//
+DELIMITER ;
+
+
+
 ------------------------------------------------3.1------------------------------------------------------
 ---------------------------3_1_1-------------------------------
 DELIMITER //
@@ -30,8 +133,8 @@ DELIMITER //
     BEGIN
         SELECT DISTINCT author.first_name, author.last_name 
         FROM author 
-        WHERE EXISTS (SELECT * FROM category 
-                    WHERE (author.ISBN = category.ISBN AND category.category = which_category))
+        WHERE (which_category = '' OR EXISTS (SELECT * FROM category 
+                    WHERE (author.ISBN = category.ISBN AND category.category = which_category)))
         ORDER BY author.last_name, author.first_name DESC;
     END;
 //
@@ -47,10 +150,10 @@ DELIMITER //
         SELECT DISTINCT user.first_name, user.last_name
         FROM user 
         RIGHT JOIN borrowing ON user.user_id = borrowing.user_id
-        WHERE (user.job = 'Teacher' AND DATEDIFF(NOW(), CAST(borrowing.borrowing_date AS DATETIME)) < 365 AND 
+        WHERE (which_category = '' OR (user.job = 'Teacher' AND DATEDIFF(NOW(), CAST(borrowing.borrowing_date AS DATETIME)) < 365 AND 
               (borrowing.borrowing_status = 'Approved' OR borrowing.borrowing_status = 'Completed') 
               AND EXISTS (SELECT * FROM category 
-              WHERE (borrowing.ISBN = category.ISBN AND category.category = which_category)))
+              WHERE (borrowing.ISBN = category.ISBN AND category.category = which_category))))
         ORDER BY user.last_name, user.first_name DESC;
     END;
 //
@@ -110,12 +213,12 @@ DELIMITER //
         READS SQL DATA
         COMMENT 'Exercise 3.1.6'
     BEGIN
-        SELECT COUNT(A.ISBN) AS best_3, A.category1 AS first_cat, A.category2 AS second_cat
-        FROM category1.category AS category1
+        SELECT COUNT(borrowing.ISBN) AS best_3, category1.category AS first_cat, category2.category AS second_cat
+        FROM category AS category1
         INNER JOIN category AS category2 ON category1.category < category2.category
         INNER JOIN borrowing ON (borrowing.ISBN = category1.ISBN AND borrowing.ISBN = category2.ISBN)
-        GROUP BY category1, category2
-        ORDER BY COUNT(A.ISBN) DESC LIMIT 3;   
+        GROUP BY category1.category, category2.category
+        ORDER BY COUNT(borrowing.ISBN) DESC LIMIT 3;   
 END;
 //
 DELIMITER ;
@@ -136,11 +239,10 @@ DELIMITER //
 DELIMITER ;
 ------------------------------------------------3.2------------------------------------------------------
 ------------------------------------------------3.2.1------------------------------------------------------
-DELIMITER //
+/*DELIMITER //
     CREATE DEFINER='root'@'localhost' PROCEDURE question_3_2_1(
         IN which_title VARCHAR(50),
-        IN which_author_firstname VARCHAR(50),
-        IN which_author_lastname VARCHAR(50),
+        IN which_author_name VARCHAR(50),
         IN which_category VARCHAR(50),
         IN which_availabiliity INT
     )
@@ -150,16 +252,17 @@ DELIMITER //
         SELECT author.first_name, author.last_name, book.book_title
         FROM book 
         INNER JOIN author ON book.ISBN = author.ISBN
-        WHERE ((which_title = '' OR book.book_title = which_title) AND 
-                ((which_author_firstname = '' AND which_author_lastname = '') OR 
-                 (author.first_name = which_author_firstname AND author.last_name = which_author_lastname)) AND
+        WHERE ((which_title = '' OR book.book_title LIKE CONCAT('%', which_title, '%')) AND
+                (which_author_name = '' OR
+                (author.first_name LIKE CONCAT('%', which_author_name, '%')) OR
+                (author.last_name LIKE CONCAT('%', which_author_name, '%'))) AND
                  (which_availabiliity = -1 OR book.available = which_availabiliity) AND
                  (which_category = '' OR 
                   EXISTS(SELECT * FROM category WHERE (category.ISBN = book.ISBN AND category.category = which_category))))
         ORDER BY author.first_name;
     END;
 //
-DELIMITER ;
+DELIMITER ;*/
 
 ------------------------------------------------3.2.2------------------------------------------------------
 DELIMITER //
@@ -214,3 +317,58 @@ DELIMITER //
 DELIMITER ;
 
 ------------------------Extras that occured while builidng the app--------------------------
+--Checking borrowing
+DELIMITER //
+    CREATE DEFINER='root'@'localhost' PROCEDURE borrowing_approve(
+        IN id INT,
+        IN job NVARCHAR(50),
+        IN bookISBN INT,
+        IN schoolid INT
+    )   
+        READS SQL DATA
+        COMMENT 'Borrow check'
+    BEGIN
+        SET @checker = 1;
+
+        SELECT books_borrowed INTO @booksborrowed FROM user WHERE user_id = id;
+
+        SELECT borrowing_id INTO @bookoverdue FROM borrowing 
+        WHERE borrowing_status = 'Approved' AND 
+                DATEDIFF(CURRENT_TIMESTAMP, CAST(borrowing_date AS DATETIME)) >= 7 AND 
+                user_id = id;
+        SELECT FOUND_ROWS() INTO @bookoverdue;
+
+        SELECT COUNT(borrowing_id) INTO @booksborrowed_perweek FROM borrowing 
+        WHERE (borrowing_status = 'Approved' OR borrowing_status = 'Completed') AND 
+        DATEDIFF(CURRENT_TIMESTAMP, CAST(borrowing_date AS DATETIME)) < 7 AND 
+        user_id = id
+        GROUP BY user_id;
+
+        SELECT * INTO @againcheck_borrowing
+        FROM borrowing 
+        INNER JOIN book ON (book.ISBN = bookISBN AND borrowing.ISBN = bookISBN 
+                            AND book.school_id = schoolid AND borrowing.school_id = schoolid)
+        WHERE borrowing.borrowing_status = 'Approved' OR borrowing.borrowing_status = 'Waiting';
+        SELECT FOUND_ROWS() INTO @againcheck_borrowing;
+
+        SELECT * INTO @againcheck_reserving
+        FROM reservation 
+        INNER JOIN book ON (book.ISBN = bookISBN AND reservation.ISBN = bookISBN 
+                            AND book.school_id = schoolid AND reservation.school_id = schoolid)
+        WHERE reservation.reservation_status = 'Waiting';
+        SELECT FOUND_ROWS() INTO @againcheck_reserving;
+
+        IF job = 'Student' THEN
+            IF (@booksborrowed = 2 OR @bookoverdue > 0 OR @booksborrowed_perweek = 2 OR 
+                @againcheck_borrowing > 0 OR @againcheck_reserving > 0) THEN 
+                    SET @checker = 0;
+            END IF;
+        ELSEIF job = 'Teacher' THEN 
+            IF (@booksborrowed = 1 OR @bookoverdue > 0 OR @booksborrowed_perweek = 1 OR 
+                @againcheck_borrowing > 0 OR @againcheck_reserving > 0) THEN 
+                    SET @checker = 0;
+            END IF;
+        END IF;
+    END;
+//
+DELIMITER ;

@@ -20,19 +20,19 @@ VALUES ('sadmin1', 'password1', 'John', 'Doe', 'Male', '1990-05-20', 1, 1, 'Appr
 ('sadmin4', 'password4', 'Bob', 'Johnson', 'Male', '1988-12-31', 4, 1, 'Waiting'),
 ('sadmin5', 'password5', 'Chris', 'Lee', 'Other', '1998-07-15', 5, 1, 'Approved');
 
-INSERT INTO user (login_id, passwd, first_name, last_name, birth_date, school_name, job, books_borrowed, user_status)
-VALUES ('user1', 'password1', 'Alice', 'Smith', '2005-01-01', 'School A', 'Student', 1, 'Waiting'),
-('user2', 'password2', 'Bob', 'Johnson', '1995-05-20', 'School B', 'Teacher', 1, 'Approved'),
-('user3', 'password3', 'Chris', 'Lee', '2003-09-06', 'School C', 'Student', 1, 'Waiting'),
-('user4', 'password4', 'David', 'Kim', '1998-12-31', 'School D', 'Teacher', 1, 'Declined'),
-('user5', 'password5', 'Emma', 'Wilson', '2002-07-15', 'School E', 'Student', 1, 'Approved');
+INSERT INTO user (login_id, passwd, first_name, last_name, birth_date, school_id, job, books_borrowed, user_status)
+VALUES ('user1', 'password1', 'Alice', 'Smith', '2005-01-01', 1, 'Student', 1, 'Waiting'),
+('user2', 'password2', 'Bob', 'Johnson', '1995-05-20', 2, 'Teacher', 1, 'Approved'),
+('user3', 'password3', 'Chris', 'Lee', '2003-09-06', 3, 'Student', 1, 'Waiting'),
+('user4', 'password4', 'David', 'Kim', '1998-12-31', 4, 'Teacher', 1, 'Declined'),
+('user5', 'password5', 'Emma', 'Wilson', '2002-07-15', 5, 'Student', 1, 'Approved');
 
-INSERT INTO book (book_title, publisher, no_pages, summary, available, sprache, school_id, scadmin_id)
-VALUES ('Harry Potter and the Philosopher''s Stone', 'Bloomsbury Publishing', 223, 'The first book in the Harry Potter series.', 5, 'English', 1, 1),
-('The Lord of the Rings', 'George Allen & Unwin', 1178, 'A trilogy that tells the story of a hobbit named Frodo Baggins and his quest to destroy the One Ring.', 5, 'English', 2, 3),
-('To Kill a Mockingbird', 'J. B. Lippincott & Co.', 281, 'A novel set in the Southern United States during the Great Depression, and follows the story of a young girl named Scout Finch.', 5, 'English', 3, 3),
-('The Catcher in the Rye', 'Little, Brown and Company', 277, 'A novel that tells the story of Holden Caulfield, a teenage boy who is expelled from his school and goes on a journey of self-discovery.', 5, 'English', 4, 2),
-('The Great Gatsby', 'Charles Scribner''s Sons', 180, 'A novel set in the Roaring Twenties, and follows the story of a young man named Jay Gatsby and his obsession with a woman named Daisy Buchanan.', 5, 'English', 5, 5);
+INSERT INTO book (ISBN, school_id, book_title, publisher, no_pages, summary, available, sprache, scadmin_id)
+VALUES (1, 1 ,'Harry Potter and the Philosopher''s Stone', 'Bloomsbury Publishing', 223, 'The first book in the Harry Potter series.', 5, 'English', 1),
+(2, 2, 'The Lord of the Rings', 'George Allen & Unwin', 1178, 'A trilogy that tells the story of a hobbit named Frodo Baggins and his quest to destroy the One Ring.', 5, 'English', 3),
+(3, 3, 'To Kill a Mockingbird', 'J. B. Lippincott & Co.', 281, 'A novel set in the Southern United States during the Great Depression, and follows the story of a young girl named Scout Finch.', 5, 'English', 3),
+(4, 4, 'The Catcher in the Rye', 'Little, Brown and Company', 277, 'A novel that tells the story of Holden Caulfield, a teenage boy who is expelled from his school and goes on a journey of self-discovery.', 5, 'English', 2),
+(5, 5, 'The Great Gatsby', 'Charles Scribner''s Sons', 180, 'A novel set in the Roaring Twenties, and follows the story of a young man named Jay Gatsby and his obsession with a woman named Daisy Buchanan.', 5, 'English', 5);
 
 INSERT INTO review (ISBN, user_id, review_date, txt, likert, review_status)
 VALUES (1, 1, '2022-04-15', 'Great book, loved the story and the characters!', 'Positive', 'Approved'),
