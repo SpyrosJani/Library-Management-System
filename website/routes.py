@@ -250,56 +250,63 @@ def user_booklist():
     except Exception as e:
         flash (str(e), 'danger')
         redirect('/')
+
+
+@routes.route('/submit_isbn', methods = ['GET','POST'])
+def submit_isbn():
+    global book_global_code
     
+    if request.method == 'POST':
+        book_global_code = str(request.form['writereview_button'])
+    
+    return redirect('/user/booksearch/review')
+
 @routes.route('/user/booksearch/details', methods = ['GET', 'POST'])
 def user_bookdetails():
-    global user_access
-    global book
-    global image_source
+    global user_access, booking, image_source
     if (user_access):
-        if request.method == 'POST':
-            ISBN = request.form.get('details_button')
-            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
-            user_id = int(session.get("id")) 
-            cursor = connection.cursor() 
-            query = ('SELECT school_id FROM user WHERE user_id = {};'.format(user_id))
-            cursor.execute(query)
-            aux = cursor.fetchall()
-            school_id = int(aux[0][0])
+        ISBN = request.form['details_button']
+        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
+        user_id = int(session.get("id")) 
+        cursor = connection.cursor() 
+        query = ('SELECT school_id FROM user WHERE user_id = {};'.format(user_id))
+        cursor.execute(query)
+        aux = cursor.fetchall()
+        school_id = int(aux[0][0])
 
-            print("##########################################################")
+        print("##########################################################!!!!!!!!")
 
-            cursor.callproc('details', [ISBN, school_id])
-            if (cursor.rowcount == -1):
-                book = []   
-            else:
-                for result in cursor.stored_results(): 
-                    book = result.fetchall()
-                    print ("#############################", book)
-                    image_source = ''
-                    
-                    if (book[0][10] != ''):
-                        decoded_image = base64.b64decode(book[0][10])
-                        image_source = "data:image/jpeg;base64," + base64.b64encode(decoded_image).decode('utf-8')
-            
-            cursor.close()
-            connection.close()
-            return render_template('user_details.html', book = book, image_source = image_source)
+        cursor.callproc('details', [ISBN, school_id])
+        booking = []   
+        if cursor.rowcount != -1:
+            for result in cursor.stored_results(): 
+                booking = result.fetchall()
+                print("$$$$$$")
+                image_source = ''
+        
+                if (booking[0][10] != ''):
+                    decoded_image = base64.b64decode(booking[0][10])
+                    image_source = "data:image/jpeg;base64," + base64.b64encode(decoded_image).decode('utf-8')
+
+        print(booking + "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&7&") 
+        cursor.close()
+        connection.close()
+
+        #return redirect('user_details.html', book_ = booking, image_source = image_source)
 
     else:
         return redirect('/')
     
-    return render_template('schooladmin_details.html', book = book, image_source = image_source)
-
-@routes.route('/user/booklist/review')
+    return render_template('user_details.html', book_ = booking, image_source = image_source)
+    
+@routes.route('/user/booksearch/review', methods = ['GET', 'POST'])
 def review():
-    global user_access, books
+    global user_access, books, book_global_code
     if (user_access):
         if request.method == 'POST':
             connection = sql.connect(host = host_config, user = user_config, password = password_config, database = database_config)
             cursor = connection.cursor()
             user_id = int(session['id'])
-            isbn = int(request.form['writereview_button'])
 
             query = ('SELECT school_id FROM user WHERE user_id = {};'.format(user_id))
             cursor.execute(query)
@@ -310,13 +317,34 @@ def review():
             question2 = request.form.get('Book2')
             question3 = request.form.get('Book3')
             question4 = request.form.get('Book4')
-            question5 = request.form.get('Book5') 
+            question5 = request.form.get('Book5')
             review = request.form.get('review')
 
             if review == '':
-                flash ('You need to write a review for this book.', 'danger')
-                     
-            return render_template('review_form.html')
+                flash ('You need to write a review for this book.', category = 'danger')
+                return redirect('/user/booksearch')
+            
+            query = ("SELECT job FROM user WHERE user_id = {}".format(user_id))
+            cursor.execute(query)
+            aux = cursor.fetchall()
+            role = str(aux[0][0])
+            likert = question1 + question2 + question3 + question4 + question5
+
+            print(book_global_code + "kosakodosakdosakdoak(*!(&(*@^!(*#!&))))")
+            if role == 'Student':
+                query = ("INSERT INTO review (ISBN, user_id, txt, likert, review_status, school_id) VALUES ('{}', {}, '{}', '{}', 'Waiting', {})".format(book_global_code, user_id, review, likert, school_id))
+            else:
+                query = ("INSERT INTO review (ISBN, user_id, txt, likert, review_status, school_id) VALUES ('{}', {}, '{}', '{}', 'Approved', {})".format(book_global_code, user_id, review, likert, school_id))  
+            
+            cursor.execute(query)
+            connection.commit()
+
+            if role == 'Student':
+                flash("Review registered successfully. Waiting for permission to post...", category = 'success')
+            else:
+                flash("Review registered and posted successfully!")
+            return redirect('/user/booksearch')
+        return render_template('review_form.html')
 
 @routes.route('/user/books')
 def books():

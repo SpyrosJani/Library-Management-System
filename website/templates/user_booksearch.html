@@ -85,10 +85,10 @@
                         <button type = "button" class = "btn btn-outline-warning">Reserve</button>
                     </td>
                     <td class = "align-middle">
-                        <a class = "btn btn-outline-light" href = "/user/booksearch/review" onclick="handdle_Click_Review('{{ book[0] }}')">Write Review</a>
+                        <a class = "btn btn-outline-light" href = "/user/booksearch/review" role = "button" onclick="handle_Click_Review('{{ book[0] }}')">Write Review</a>
                     </td>
-                    <td class = "align-middle">
-                        <a href = "/user/booksearch/details" class="btn btn-light" role = "button" onclick="handle_Click_Details('{{ book[0] }}')">Details</a>
+                    <<td class = "align-middle">
+                        <a class="btn btn-outline-light" href = "/user/booksearch/details" role = "button" onclick="handle_Click_Details('{{ book[0] }}')">Details</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -111,7 +111,7 @@
             var formData = new FormData();
             formData.append('writereview_button', buttonId);
 
-            fetch('/user/booksearch/review', {
+            fetch('/submit_isbn', {
                 method: 'POST',
                 body: formData
             });

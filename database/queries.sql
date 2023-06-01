@@ -1,6 +1,3 @@
-----------------------------------USER_SEARCHBOOK-----------------------------------------
-
-
 DELIMITER //
     CREATE DEFINER='root'@'localhost' PROCEDURE search_book(
         IN which_title VARCHAR(50),
@@ -22,13 +19,14 @@ DELIMITER //
                 (which_category = '' OR
                 EXISTS (SELECT * FROM category WHERE (category.ISBN = book.ISBN AND category.category = which_category))) AND
                 (book.school_id = schoolid))
+        GROUP BY book.ISBN
         ORDER BY book.book_title;
     END;
 
 //
 DELIMITER ;
 
----------------------------------------BOOKLIST--------------------------------
+---------------------------------------SCADMIN_BOOKLIST--------------------------------
 DELIMITER //
     CREATE DEFINER='root'@'localhost' PROCEDURE booklist(
         IN which_title VARCHAR(50),
@@ -52,15 +50,16 @@ DELIMITER //
                  (which_category = '' OR 
                   EXISTS(SELECT * FROM category WHERE (category.ISBN = book.ISBN AND category.category = which_category))) AND
                   (book.school_id = schoolid))
+        GROUP BY book.ISBN
         ORDER BY author.first_name;
     END;
 //
 DELIMITER ;
 
--------------------------------------USERBOOK DETAILS----------------------------------------------------
+-------------------------------------BOOK DETAILS----------------------------------------------------
 DELIMITER //
     CREATE DEFINER='root'@'localhost' PROCEDURE details(
-        IN ISBN INT,
+        IN ISBN VARCHAR(50),
         IN school_id INT
     )
         READS SQL DATA
@@ -71,7 +70,8 @@ DELIMITER //
         INNER JOIN author ON author.ISBN = book.ISBN
         INNER JOIN category ON category.ISBN = book.ISBN 
         INNER JOIN keywords ON keywords.ISBN = book.ISBN 
-        WHERE ( (book.ISBN = ISBN) AND (book.school_id = school_id) );
+        WHERE ( (book.ISBN = ISBN) AND (book.school_id = school_id) )
+        GROUP BY ISBN;
     END;
 //
 DELIMITER ;
