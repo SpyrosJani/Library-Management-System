@@ -226,91 +226,6 @@ CREATE INDEX idx_school ON school (school_id, school_name);
 CREATE INDEX idx_borrowing ON borrowing (ISBN, user_id, borrowing_date, borrowing_status, scadmin_id);
 CREATE INDEX idx_book ON book (ISBN, book_title, school_id, scadmin_id);
 CREATE INDEX idx_school_admin ON school_admin (scadmin_id, first_name, last_name);
------------------------------------------Triggers-----------------------------------------
-DELIMITER //
-CREATE PROCEDURE borrowing_helper()   
-    COMMENT 'Borrow helper'
-BEGIN
-    DECLARE auxiliary INT;
-    DECLARE avail INT;
-
-    IF NEW.borrowing_status = 'Approved' THEN
-        SELECT school_id 
-        INTO auxiliary
-        FROM borrowing 
-        INNER JOIN school_admin ON borrowing.scadmin_id = school_admin.scadmin_id 
-        INNER JOIN school ON school_admin.school_id = school.school_id;
-
-        SELECT available 
-        INTO avail
-        FROM book 
-        WHERE (book.ISBN = OLD.ISBN AND book.school_id = auxiliary);
-
-        IF avail = 0 THEN
-            INSERT INTO reservation(ISBN, user_id, reservation_date, reservation_to_date, reservation_status, scadmin_id)
-            VALUES (OLD.ISBN, OLD.user_id, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 'Waiting Queue', OLD.scadmin_id);
-            DELETE FROM borrowing WHERE borrowing_id = OLD.borrowing_id; 
-        ELSEIF avail > 0 THEN 
-            UPDATE user 
-            SET books_borrowed = books_borrowed + 1
-            WHERE user_id = OLD.user_id;
-
-            UPDATE book 
-            SET available = available + 1
-            WHERE ISBN = OLD.ISBN AND school_id = auxiliary;
-        END IF;
-    END IF; 
-END;
-//
-DELIMITER ;
-
-DELIMITER //
-CREATE TRIGGER reservation_state AFTER UPDATE ON reservation FOR EACH ROW
-BEGIN
-    DECLARE auxiliary INT;
-    DECLARE avail INT;
-
-    IF (NEW.reservation_status = 'Approved') THEN
-        SELECT school_id 
-        INTO auxiliary
-        FROM reservation 
-        INNER JOIN school_admin ON reservation.scadmin_id = school_admin.scadmin_id 
-        INNER JOIN school ON school_admin.school_id = school.school_id;
-
-        SELECT available 
-        INTO avail
-        FROM book 
-        WHERE (book.ISBN = NEW.ISBN AND book.school_id = auxiliary);
-
-        IF avail = 0 THEN 
-            UPDATE reservation
-            SET reservation_status = 'Waiting Queue'
-            WHERE reservation_id = NEW.reservation_id;
-        ELSEIF avail > 0 THEN 
-            INSERT INTO borrowing(ISBN, user_id, borrowing_date, borrowing_status, scadmin_id)
-            VALUES (NEW.ISBN, NEW.user_id, CURRENT_TIMESTAMP(), 'Approved', NEW.scadmin_id);
-            DELETE FROM reservation WHERE reservation_id = NEW.reservation_id; 
-        END IF;
-    END IF;
-END
-//
-DELIMITER ;
-
-DELIMITER //
-CREATE TRIGGER borrowing_state_update AFTER UPDATE ON borrowing FOR EACH ROW 
-BEGIN
-    CALL borrowing_helper();
-END
-//
-DELIMITER ;
-
-DELIMITER //
-CREATE TRIGGER borrowing_state_insert AFTER INSERT ON borrowing FOR EACH ROW 
-BEGIN
-    CALL borrowing_helper();
-END
-//
-DELIMITER ;
 -----------------------------------------Views-----------------------------------------
 CREATE VIEW administrator_view AS
     SELECT admin_id, login_id, first_name, last_name, birth_date 
@@ -344,11 +259,59 @@ CREATE VIEW keywords_view AS
     SELECT keyword 
     FROM keywords; 
 
+------------------------------------Trigger---------------------------------------------
+DELIMITER //
+CREATE TRIGGER borrowing_state AFTER INSERT ON borrowing FOR EACH ROW
+BEGIN
+    IF NEW.borrowing_status = 'Approved' THEN 
+        UPDATE user 
+        SET books_borrowed = books_borrowed + 1
+        WHERE user.user_id = NEW.user_id;
+
+        UPDATE book 
+        SET available = available - 1
+        WHERE (book.ISBN = NEW.ISBN AND school_id = (SELECT school_id FROM school WHERE school_id = NEW.scadmin_id));
+    END IF;
+END
+//
+DELIMITER ;
+
 --Erasing every day the too delayed reservations
+DELIMITER //
 CREATE EVENT too_delayed
 ON SCHEDULE EVERY 1 DAY
 DO
+BEGIN
     DELETE FROM librarydbms.reservation 
-    WHERE (DATEDIFF(CURRENT_TIMESTAMP, CAST(reservation_date AS DATETIME)) >= 7 AND reservation_status = 'Waiting');
+    WHERE (DATEDIFF(CAST(CURRENT_TIMESTAMP AS DATE), CAST(reservation_date AS DATETIME)) >= 7 AND reservation_status = 'Waiting');
+    DELETE FROM librarydbms.borrowing
+    WHERE (DATEDIFF(CAST(CURRENT_TIMESTAMP AS DATE), CAST(borrowing_date AS DATETIME)) >= 7 AND borrowing_status = 'Waiting');
+END
+//
+DELIMITER ;
+
+DELIMITER //
+CREATE EVENT reservation_made_borrowing 
+ON SCHEDULE EVERY 1 MINUTE 
+DO 
+BEGIN
+    SET @flag = NULL;
+
+    SELECT reservation_id INTO @flag
+    FROM reservation
+    WHERE (reservation_status = 'Approved' AND reservation_to_date = CAST(CURRENT_TIMESTAMP AS DATE));
+
+    IF (@flag IS NOT NULL) THEN 
+        INSERT INTO borrowing (ISBN, user_id, borrowing_date, borrowing_status, scadmin_id)
+        SELECT ISBN, user_id, reservation_to_date, reservation_status, scadmin_id
+        FROM reservation
+        WHERE (reservation_status = 'Approved' AND reservation_to_date = CAST(CURRENT_TIMESTAMP AS DATE));
+
+        DELETE FROM reservation
+        WHERE reservation_id = @flag;
+    END IF;
+END
+//
+DELIMITER ;
 ------------------------Extras that occured while builidng the app--------------------------
 

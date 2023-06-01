@@ -1,0 +1,95 @@
+{% extends "home_page.html" %} {% block title %}School List{% endblock %}
+
+{% block button_header %}
+<style>
+#topRight {
+    position:fixed;
+    top:0;
+    right:0;
+}
+#nextToRight {
+    position:fixed;
+    top:0;
+    right:100px;
+}
+#search {
+    position:fixed;
+    left:0;
+    top:80px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+    <div id="topRight">
+        <a href="/" class = "btn btn-info" role="button">LogOut</a> 
+    </div>
+
+    <div id = "nextToRight"> 
+        <a href = "/admin" class = "btn btn-info" role = "button">Home</a>
+    </div>
+
+    <div class = "container"> 
+        <table class = "table table-dark table-hover mt-5"> 
+            <tbody>
+                <tr>
+                    <form action="/admin/question_1" method="POST">
+                        <td> 
+                            <div class="form-group">
+                                <label for="search_year">Search by year:</label>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="search_year"
+                                    name="search_year">
+                            </div>
+                        </td>
+                        <td> 
+                            <label for="search_month">Search by month:</label>
+                            <select 
+                                id = "search_month"
+                                class= "form-control"
+                                name = "search_month">
+                                    <option value=""></option>
+                                    <option value="1">January</option>
+                                    <option value="2">February</option>
+                                    <option value="3">March</option>
+                                    <option value="4">April</option>
+                                    <option value="5">May</option>
+                                    <option value="6">June</option>
+                                    <option value="7">July</option>
+                                    <option value="8">August</option>
+                                    <option value="9">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
+                            </select>
+                        </td>
+                        <div id = "search">
+                            <button type="submit" class="btn btn-info">Search</button>
+                        </div>
+                    </form>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class = "container"> 
+        <table class = "table table-dark table-hover mt-5"> 
+            <thead> 
+                <tr>
+                    <th scope="col" class = "col-2">School Name</th>
+                    <th scope="col" class = "col-2">Number of Borrowings</th>
+                </tr>
+            </thead>
+            {% for i in question_1 %}
+                <thead> 
+                    <tr>
+                        <td class="align-middle">{{i[0]}}</div></td>
+                        <td class="align-middle">{{i[1]}}</div></td>
+                    </tr>
+                </thead>
+            {% endfor %}
+        </table>
+    </div>
+{% endblock %}

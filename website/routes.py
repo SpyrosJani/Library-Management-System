@@ -1,19 +1,20 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, session
 import re
 import mysql.connector as sql
-from datetime import datetime
+from datetime import datetime, timedelta
 from os import abort
+import threading, time
+import base64
 from website.credentials import user_config, database_config, host_config, password_config
 
 routes = Blueprint('routes', __name__)
 
-#----------------------------------HOME PAGE----------------------------------
+#----------------------------------HOME PAGE/LOG IN----------------------------------
 @routes.route('/')
 def index(): 
-    global admin_access, sadmin_access, user_access
+    global admin_access, sadmin_access
     admin_access = False
     sadmin_access = False
-    user_access = False
     session['connected'] = False
     session['id'] = -1
     directory = '/static/library.jpg'
@@ -22,58 +23,55 @@ def index():
 
 @routes.route('/', methods = ['GET', 'POST'])
 def login():
-    if (request.method == 'POST'):
-        email = request.form.get('email')
-        password = request.form.get('password')
-        role = str(request.form.get('Role'))
-        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
-        cursor = connection.cursor() 
-        if(role == 'Student' or role == 'Teacher'):
-            query = ("SELECT user_id FROM user WHERE (login_id = '{}' AND passwd = '{}' AND job = '{}' AND user_status = 'Approved');".format(email, password, role))
-            cursor.execute(query)
-            aux = cursor.fetchall()
-            cursor.close()
-            connection.close()
-            if(len(aux) == 0):
-                flash('Invalid email address or password or you are still not approved', category = 'error')
-            else:
-                session['id'] = aux[0][0]
-                session['connected'] = True
-                return redirect('/user')
-        elif(role == 'School Administrator'):
-            query = ("SELECT scadmin_id FROM school_admin WHERE (login_id = '{}' AND passwd = '{}' AND scadmin_status = 'Approved');".format(email, password))
-            cursor.execute(query)
-            aux = cursor.fetchall()
-            cursor.close()
-            connection.close()
-            if(len(aux) == 0):
-                flash('Invalid email address or password or you are still not approved', category = 'error')
-            else:
-                session['id'] = aux[0][0]
-                session['connected'] = True
-                return redirect('/schooladmin')
-        elif(role == 'Administrator'):
-            query = ("SELECT admin_id FROM administrator WHERE (login_id = '{}' AND passwd = '{}');".format(email, password))
-            cursor.execute(query)
-            aux = cursor.fetchall()
-            cursor.close()
-            connection.close()
-            if(len(aux) == 0):
-                flash('Invalid email address or password', category = 'error')
-            else:
-                session['id'] = aux[0][0]
-                session['connected'] = True
-                return redirect('/admin')
-        cursor.close()
-        connection.close()
-        return redirect('/')
-    '''except Exception as e:
-        print("AN ERROR OCCURED")
+    try:
+        if (request.method == 'POST'):
+            login = request.form.get('login')
+            password = request.form.get('password')
+            role = str(request.form.get('Role'))
+            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+            cursor = connection.cursor() 
+            if(role == 'Student' or role == 'Teacher'):
+                query = ("SELECT user_id FROM user WHERE (login_id = '{}' AND passwd = '{}' AND job = '{}' AND user_status = 'Approved');".format(login, password, role))
+                cursor.execute(query)
+                aux = cursor.fetchall()
+                cursor.close()
+                connection.close()
+                if(len(aux) == 0):
+                    flash('Invalid email address or password or you are still not approved', category = 'error')
+                else:
+                    session['id'] = aux[0][0]
+                    session['connected'] = True
+                    return redirect('/user')
+            elif(role == 'School Administrator'):
+                query = ("SELECT scadmin_id FROM school_admin WHERE (login_id = '{}' AND passwd = '{}' AND scadmin_status = 'Approved');".format(login, password))
+                cursor.execute(query)
+                aux = cursor.fetchall()
+                cursor.close()
+                connection.close()
+                if(len(aux) == 0):
+                    flash('Invalid email address or password or you are still not approved', category = 'error')
+                else:
+                    session['id'] = aux[0][0]
+                    session['connected'] = True
+                    return redirect('/schooladmin')
+            elif(role == 'Administrator'):
+                query = ("SELECT admin_id FROM administrator WHERE (login_id = '{}' AND passwd = '{}');".format(login, password))
+                cursor.execute(query)
+                aux = cursor.fetchall()
+                cursor.close()
+                connection.close()
+                if(len(aux) == 0):
+                    flash('Invalid email address or password', category = 'error')
+                else:
+                    session['id'] = aux[0][0]
+                    session['connected'] = True
+                    return redirect('/admin')
+            return redirect('/')
+    except Exception as e:
         flash(str(e), "danger")
-        abort()'''
-    
+        abort()
     return render_template('home_page.html')
-#----------------------------------HOME PAGE----------------------------------
+#----------------------------------HOME PAGE/LOG IN----------------------------------
 
 
 #----------------------------------LOG OUT----------------------------------
@@ -85,6 +83,7 @@ def logout():
             session['connected'] = False
             session['id'] = -1  
             admin_access = False
+            sadmin_access = False
     except Exception as e:
         flash(str(e), "danger")
         abort()
@@ -98,7 +97,7 @@ def logout():
 def sign_up():
     try:
         #---------Database connection------------
-        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
         cursor = connection.cursor() 
         query = ('SELECT school_name FROM school;')
         cursor.execute(query)
@@ -111,7 +110,7 @@ def sign_up():
         #Id submit is pressed (adding a new account)
         if (request.method == 'POST'):
             #------------Variables we need------------
-            email = request.form.get('email')
+            email = request.form.get('sign_login')
             firstName = request.form.get('firstName')
             lastName = request.form.get('lastName')
             sex = request.form.get('Gender')
@@ -161,14 +160,14 @@ def sign_up():
                 flash('This email is already occupied', category = 'error')
             elif len(firstName) < 2 or len(lastName) < 2:
                 flash('First and last names must be greater than 1 characters.', category = 'error')
-            elif password1 != password2:
+            elif (password1 != password2):
                 flash('Passwords don\'t match.', category='error')
             elif not re.fullmatch(r'[A-Za-z0-9@#$%^&+=]{8,}', password1):
                 flash('Password is too weak! Use a password of at least 8 characters. Must be restricted to uppercase, lowercase letters, numbers, any special character.', category = 'error')
             else:
                 if(role == 'Student' or role == 'Teacher'):
-                    query = ("""INSERT INTO user (login_id, passwd, first_name, last_name, sex, birth_date, school_id, job, books_borrowed, user_status) 
-                            VALUES ('{}', '{}', '{}', '{}', '{}', '{}', {}, '{}', 0, 'Waiting');""".format(email, password2, firstName, lastName, sex, str(dob), int(school_id[0][0]), role))
+                    query = ("""INSERT INTO user (login_id, passwd, first_name, last_name, birth_date, school_id, job, books_borrowed, user_status, sex) 
+                            VALUES ('{}', '{}', '{}', '{}', '{}', {}, '{}', 0, 'Waiting', '{}');""".format(email, password2, firstName, lastName, str(dob), int(school_id[0][0]), role, sex))
                 else:
                     query = ("""INSERT INTO school_admin (login_id, passwd, first_name, last_name, sex, birth_date, scadmin_status, school_id)
                             VALUES ('{}', '{}', '{}', '{}', '{}', '{}', 'Waiting', {});""".format(email, password2, firstName, lastName, sex, str(dob), int(school_id[0][0])))
@@ -195,7 +194,7 @@ def user():
     global user_access
     user_access = True
     try:
-        connection = sql.connect(host = host_config, user = user_config, database = database_config, password = password_config)
+        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
         cursor = connection.cursor()
         query = ("SELECT * FROM user WHERE user_id = {};".format(int(session.get("id"))))
         cursor.execute(query)
@@ -205,6 +204,7 @@ def user():
         if len(aux) == 0:
             user_access = False
             return redirect('/')
+        
     except Exception as e:
         flash(str(e), 'danger')
         abort()
@@ -214,10 +214,10 @@ def user():
 @routes.route('/user/booksearch', methods = ['GET', 'POST'])
 def user_booklist():
     global user_access, books
-    if (user_access):
-        print("Post request given")
-        connection = sql.connect(host = host_config, user = user_config, password = password_config, database = database_config)
+    try:
+        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
         cursor = connection.cursor()
+
         which_title = request.form.get('title')
         which_author_name = request.form.get('author')
         which_category = request.form.get('category')
@@ -226,49 +226,140 @@ def user_booklist():
         cursor.execute(query)
         aux = cursor.fetchall()
         school_id = int(aux[0][0])
-        print(school_id)
+
         if which_title == None:
             which_title = ''
         if which_author_name == None:
             which_author_name = ''
         if which_category == None:
             which_category = ''
+
         cursor.callproc('search_book', [which_title, which_author_name, which_category, school_id])
 
         if (cursor.rowcount == -1):
             books = []
-            print("##########################################")
         else:
             for result in cursor.stored_results():
                 books = result.fetchall()
-                print(books)
         
         cursor.close()
         connection.close()
-    else:
+
+        return render_template('user_booksearch.html', books = books)
+    
+    except Exception as e:
+        flash (str(e), 'danger')
         redirect('/')
-        
-    return render_template('user_booksearch.html', books = books)
+    
+@routes.route('/user/booksearch/details', methods = ['GET', 'POST'])
+def user_bookdetails():
+    global user_access
+    global book
+    global image_source
+    if (user_access):
+        if request.method == 'POST':
+            ISBN = request.form.get('details_button')
+            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
+            user_id = int(session.get("id")) 
+            cursor = connection.cursor() 
+            query = ('SELECT school_id FROM user WHERE user_id = {};'.format(user_id))
+            cursor.execute(query)
+            aux = cursor.fetchall()
+            school_id = int(aux[0][0])
 
-    '''except Exception as e:
-        flash(str(e), 'danger')
-        abort()'''
+            print("##########################################################")
 
-@routes.route('/user/booksearch/review')
-def review(): 
-    return render_template('review_form.html')
+            cursor.callproc('details', [ISBN, school_id])
+            if (cursor.rowcount == -1):
+                book = []   
+            else:
+                for result in cursor.stored_results(): 
+                    book = result.fetchall()
+                    print ("#############################", book)
+                    image_source = ''
+                    
+                    if (book[0][10] != ''):
+                        decoded_image = base64.b64decode(book[0][10])
+                        image_source = "data:image/jpeg;base64," + base64.b64encode(decoded_image).decode('utf-8')
+            
+            cursor.close()
+            connection.close()
+            return render_template('user_details.html', book = book, image_source = image_source)
+
+    else:
+        return redirect('/')
+    
+    return render_template('schooladmin_details.html', book = book, image_source = image_source)
+
+@routes.route('/user/booklist/review')
+def review():
+    global user_access, books
+    if (user_access):
+        if request.method == 'POST':
+            connection = sql.connect(host = host_config, user = user_config, password = password_config, database = database_config)
+            cursor = connection.cursor()
+            user_id = int(session['id'])
+            isbn = int(request.form['writereview_button'])
+
+            query = ('SELECT school_id FROM user WHERE user_id = {};'.format(user_id))
+            cursor.execute(query)
+            aux = cursor.fetchall()
+            school_id = int(aux[0][0])
+
+            question1 = request.form.get('Book1')
+            question2 = request.form.get('Book2')
+            question3 = request.form.get('Book3')
+            question4 = request.form.get('Book4')
+            question5 = request.form.get('Book5') 
+            review = request.form.get('review')
+
+            if review == '':
+                flash ('You need to write a review for this book.', 'danger')
+                     
+            return render_template('review_form.html')
 
 @routes.route('/user/books')
 def books():
     return render_template('user_books.html')
 
-@routes.route('/user/profile_student')
-def profile_student():
-    return render_template('user_profile_student.html')
+@routes.route('/user/profile', methods = ['GET', 'POST'])
+def profile():
+    user_id = int(session.get("id"))
+    connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
+    cursor = connection.cursor() 
+    query = ("""SELECT user.first_name, user.last_name, user.job, user.birth_date, school.school_name, user.login_id, user.user_id 
+                FROM user
+                INNER JOIN school ON user.school_id = school.school_id
+                WHERE user.user_id = {};""".format(user_id))
+    cursor.execute(query)
+    user = cursor.fetchall()
 
-@routes.route('/user/profile_teacher')
-def profile_teacher():
-    return render_template('user_profile_teacher.html')
+    if (user[0][2] == 'Student'):
+        return render_template('user_profile_student.html', user = user)
+    else:
+        return render_template('user_profile_teacher.html', user = user)
+
+@routes.route('/user/profile/update', methods = ['GET', 'POST'])
+def profile_update():
+    if (request.method == 'POST'):
+        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
+        cursor = connection.cursor() 
+        user_now = request.form.getlist('update_button')
+        user_now = user_now[0].split(",")
+        query = ("SELECT * FROM user WHERE login_id = '{}';".format(user_now[3]))
+        cursor.execute(query)
+        aux = cursor.fetchall()
+        if(len(aux) == 0):
+            query = ("""UPDATE user
+                        SET first_name = '{}', last_name = '{}',  login_id = '{}' 
+                        WHERE user_id = {};""".format(user_now[1], user_now[2], user_now[3], user_now[0]))
+            cursor.execute(query)
+            connection.commit()
+        else:
+            flash('This login id is already being used', category='error')
+        cursor.close()
+        connection.close()
+    return redirect("/user/profile")
 
 @routes.route('/user/reviews')
 def user_reviews():
@@ -277,12 +368,13 @@ def user_reviews():
 
 
 #-----------------ADMIN TEMPLATES-----------------------------------
+#---------------------Admin initialization--------------------------
 @routes.route('/admin')
 def admin(): 
     global admin_access
     admin_access = True
     try:
-        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
         cursor = connection.cursor()
         query = ("SELECT * FROM administrator WHERE admin_id = {};".format(int(session.get("id"))))
         cursor.execute(query)
@@ -296,6 +388,7 @@ def admin():
         flash(str(e), "danger")
         abort() 
     return render_template('admin_firstpage.html')
+#---------------------Admin initialization--------------------------
 
 
 #------------------Admin->School List------------------
@@ -308,7 +401,7 @@ def admin_schoollist():
             if(which_school == None):
                 which_school = ''
             #---------Database connection------------
-            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
             cursor = connection.cursor() 
             query = ("""SELECT school_name, city, addrss, phone_number, email, school_id 
                         FROM school
@@ -338,7 +431,7 @@ def admin_schoollist_deleting():
             if(request.method == 'POST'):
                 buttonId = request.form['delete_button']
                 #---------Database connection------------
-                connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+                connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
                 cursor = connection.cursor() 
                 query = ('DELETE FROM school WHERE school_id = {};'.format(int(buttonId)))
                 cursor.execute(query)
@@ -402,8 +495,8 @@ def admin_pending_see():
             which_admin = request.form.get('search_approved_admin')
             if(which_admin == None):
                 which_admin = ''
-            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
-            cursor = connection.cursor() 
+            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
+            cursor = connection.cursor()
             query = ("""SELECT school_admin.first_name, school_admin.last_name, school.school_name
                         FROM school_admin
                         LEFT JOIN school ON school_admin.school_id = school.school_id
@@ -428,7 +521,7 @@ def admin_pending():
     global admin_access
     try:
         if(admin_access):
-            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
             cursor = connection.cursor() 
             query = ("""SELECT school_admin.first_name, school_admin.last_name, school.school_name, school_admin.scadmin_id
                         FROM school_admin
@@ -451,26 +544,25 @@ def admin_pending():
 @routes.route('/admin/pending_approve', methods=['GET', 'POST'])
 def admin_pending_approve():
     global admin_access 
-    #try:
-    #if(admin_access):
-    if(request.method == 'POST'):
-        print("##########",)
-        #Taking the object from javascript event
-        approve = request.form['admin_schooladmin_approve_button']
-        #Connection issues
-        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
-        cursor = connection.cursor()
-        query = ("""UPDATE school_admin
-                    SET scadmin_status = 'Approved', admin_id = {}
-                    WHERE scadmin_id = {};""".format(int(session.get('id')), int(approve)))
-        cursor.execute(query) 
-        connection.commit()
-        return redirect('/admin/pending') 
-    #else:
-    #        return redirect('/')
-    '''except Exception as e:
+    try:
+        if(admin_access):
+            if(request.method == 'POST'):
+                #Taking the object from javascript event
+                approve = request.form['admin_schooladmin_approve_button']
+                #Connection issues
+                connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
+                cursor = connection.cursor()
+                query = ("""UPDATE school_admin
+                            SET scadmin_status = 'Approved', admin_id = {}
+                            WHERE scadmin_id = {};""".format(int(session.get('id')), int(approve)))
+                cursor.execute(query) 
+                connection.commit()
+                return redirect('/admin/pending') 
+            else:
+                return redirect('/')
+    except Exception as e:
         flash(str(e), "danger")
-        abort()'''
+        abort()
     return render_template('admin_pending.html')
 #------------------Admin->Peding School Admin->Approve Button------------------
 
@@ -484,7 +576,7 @@ def admin_pending_decline():
                 #Taking the object from javascript event, this will be a list with one element  in python
                 decline = request.form['admin_schooladmin_decline_button']
                 #Connection issues
-                connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+                connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
                 cursor = connection.cursor() 
                 query = ("""DELETE FROM school_admin
                             WHERE scadmin_id = {};""".format(int(decline)))
@@ -510,10 +602,9 @@ def admin_addschool():
         if(admin_access):
             if (request.method == 'POST'):
                 #---------Database connection------------
-                connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+                connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
                 cursor = connection.cursor() 
                 #---------Database connection------------
-                print("Post request given")
                 #------------Variables we need------------
                 school_name = request.form.get('school_name')
                 address = request.form.get('address')
@@ -563,7 +654,7 @@ def admin_question_1():
             else:
                 which_month = int(which_month)
             #----------------Filter input------------------
-            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
             cursor = connection.cursor()
             cursor.callproc('question_3_1_1', [which_year, which_month,])
             if(cursor.rowcount == -1):
@@ -586,7 +677,7 @@ def admin_question_1():
 def admin_question_2():
     global admin_access, question_2_1, question_2_2, categories
     try:
-        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
         cursor = connection.cursor()
         query = ("SELECT DISTINCT category FROM category;")
         cursor.execute(query)
@@ -628,7 +719,7 @@ def admin_question_3():
     global admin_access, question_3
     try:
         if(admin_access):
-            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
             cursor = connection.cursor()
             cursor.callproc('question_3_1_3')
             if (cursor.rowcount == -1):
@@ -651,7 +742,7 @@ def admin_question_4():
     global admin_access, question_4
     try:
         if(admin_access):
-            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
             cursor = connection.cursor()
             cursor.callproc('question_3_1_4')
             if (cursor.rowcount == -1):
@@ -680,7 +771,7 @@ def admin_question_5():
                 which_year = 0
             else:
                 which_year = int(which_year)
-            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
             cursor = connection.cursor()
             cursor.callproc('question_3_1_5', [which_year,])
             if (cursor.rowcount == -1):
@@ -704,7 +795,7 @@ def admin_question_6():
     global admin_access, question_6
     try:
         if(admin_access):
-            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
             cursor = connection.cursor()
             cursor.callproc('question_3_1_6')
             if (cursor.rowcount == -1):
@@ -728,7 +819,7 @@ def admin_question_7():
     global admin_access, question_7
     try:
         if(admin_access):
-            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
             cursor = connection.cursor()
             cursor.callproc('question_3_1_7')
             if (cursor.rowcount == -1):
@@ -750,12 +841,13 @@ def admin_question_7():
 
 
 #---------------SCHOOL ADMIN TEMPLATES------------------------------
+#-----------------------School Admin first page-----------------------
 @routes.route('/schooladmin')
 def school_admin(): 
     global sadmin_access 
     sadmin_access = True
     try: 
-        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
         cursor = connection.cursor()
         query = ("SELECT * FROM school_admin WHERE scadmin_id = {};".format(int(session.get("id"))))
         cursor.execute(query)
@@ -769,7 +861,9 @@ def school_admin():
         flash(str(e), "danger")
         abort()
     return render_template('schooladmin_firstpage.html') 
+#-----------------------School Admin first page-----------------------
 
+#-----------------------School Admin book list-----------------------
 @routes.route('/schooladmin/booklist', methods = ['GET', 'POST'])
 def schooladmin_booklist():
     global sadmin_access 
@@ -780,16 +874,12 @@ def schooladmin_booklist():
         which_availability = request.form.get('search_availability')
         which_category = request.form.get('search_category')
         scadmin_id = int(session.get("id"))
-        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
         cursor = connection.cursor()
         query = ('SELECT school_id FROM school_admin WHERE scadmin_id = {};'.format(scadmin_id))
         cursor.execute(query)
         aux = cursor.fetchall()
         school_id = int(aux[0][0])
-        print(which_book)
-        print(which_author)
-        print(which_availability)
-        print(which_category)
         if (which_book == None): 
             which_book = ''
         if (which_author == None): 
@@ -806,7 +896,6 @@ def schooladmin_booklist():
         else:
             for result in cursor.stored_results(): 
                 books = result.fetchall()
-                print(books)
 
         cursor.close()
         connection.close()
@@ -816,7 +905,9 @@ def schooladmin_booklist():
         flash(str(e), "danger")
         abort()'''
     return render_template('schooladmin_booklist.html', books = books)
+#-----------------------School Admin book list-----------------------
 
+#-----------------------School Admin add book-----------------------
 @routes.route('/schooladmin/booklist/add', methods=['GET', 'POST'])
 def schooladmin_addbook():
     global sadmin_access
@@ -824,10 +915,10 @@ def schooladmin_addbook():
     if(sadmin_access):
         if (request.method == 'POST'):
             #---------Database connection------------
-            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
             cursor = connection.cursor() 
             #---------Database connection------------
-            print("Post request given")
+
             #------------Variables we need------------
             title = request.form.get('title')
             ISBN = int(request.form.get('ISBN'))
@@ -837,8 +928,19 @@ def schooladmin_addbook():
             no_pages = int(request.form.get('page_number'))
             summary = str(request.form.get('summary'))
             language = request.form.get('language')
-            keywords = request.form.get('keywords') 
+            
+            keywords = request.form.get('keywords')
+            keywords = keywords.split(', ')
+
+
             category = request.form.get('category')
+            category = category.split(', ')
+
+
+            image = request.files['cover']
+            image_data = image.read()
+            binary_data = base64.b64encode(image_data).decode('utf-8')
+
             scadmin_id = int(session.get("id"))
             #------------Variables we need------------   
             #------------Doing the necessary checks and inserting--------------
@@ -849,7 +951,6 @@ def schooladmin_addbook():
             cursor.execute(query)
             school_id = cursor.fetchall()
 
-            print(school_id)
             query = ("""SELECT * FROM book 
                         WHERE (book.ISBN = {});"""
                         .format(ISBN))
@@ -861,10 +962,10 @@ def schooladmin_addbook():
                 cursor.execute(query)
                 connection.commit()
             else:
-                query = ("""INSERT INTO book (book_title, ISBN, publisher, no_pages, summary, sprache, scadmin_id, school_id, available)
-                            VALUES ('{}', {}, '{}', {}, '{}', '{}', {}, {}, 1); """
+                query = ("""INSERT INTO book (book_title, ISBN, publisher, no_pages, summary, sprache, scadmin_id, school_id, available, img)
+                            VALUES ('{}', {}, '{}', {}, '{}', '{}', {}, {}, 1, %s); """
                             .format(title, ISBN, publisher, no_pages, summary, language, scadmin_id, int(school_id[0][0])))
-                cursor.execute(query)
+                cursor.execute(query, (binary_data,))
                 connection.commit()
                 query = ("""INSERT INTO author (first_name, last_name, ISBN)
                             VALUES ('{}', '{}', {}); """
@@ -876,12 +977,12 @@ def schooladmin_addbook():
                         .format(keywords, ISBN))
                 cursor.execute(query)
                 connection.commit()
-                query = ("""INSERT INTO category (category, ISBN)
-                            VALUES ('{}', {}); """
-                        .format(category, ISBN))
-                cursor.execute(query)
-                connection.commit()
-                print("#######################################################################")
+                for i in category:
+                    query = ("""INSERT INTO category (category, ISBN)
+                                VALUES ('{}', {}); """
+                            .format(i, ISBN))
+                    cursor.execute(query)
+                    connection.commit()
             flash('Book added successfully!', category='success')
             cursor.close()
             connection.close()
@@ -893,7 +994,9 @@ def schooladmin_addbook():
         flash(str(e), "danger")
         abort()   '''
     return render_template('schooladmin_addbook.html')
+#-----------------------School Admin add book-----------------------
 
+#-----------------------School Admin book->Decline button-----------------------
 @routes.route('/schooladmin/booklist/delete', methods=['GET', 'POST'])
 def schooladmin_booklist_deleting(): 
     global sadmin_access
@@ -922,8 +1025,9 @@ def schooladmin_booklist_deleting():
         flash(str(e), "danger")
         abort() '''
     return render_template('schooladmin_bookList.html')
+#-----------------------School Admin book->Decline button-----------------------
 
-
+#-----------------------School Admin book->Update button-----------------------
 @routes.route('/schooladmin/booklist/update', methods=['GET', 'POST'])
 def schooladmin_booklist_updating(): 
     global sadmin_access
@@ -933,9 +1037,8 @@ def schooladmin_booklist_updating():
             #Taking the object from javascript event, this will be a list with one element  in python
             update = request.form.getlist('update_button')
             update = update[0].split(",")
-            print(update)
             scadmin_id = int(session.get("id"))             
-            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
             cursor = connection.cursor()
             query = ('SELECT school_id FROM school_admin WHERE scadmin_id = {};'.format(scadmin_id))
             cursor.execute(query)
@@ -955,16 +1058,16 @@ def schooladmin_booklist_updating():
         flash(str(e), "danger")
         abort() '''
     return render_template('schooladmin_booklist.html')
+#-----------------------School Admin book->Update button-----------------------
 
-flag = True
-
+#-----------------------School Admin book->Details button-----------------------
 @routes.route('/schooladmin/booklist/details', methods = ['GET', 'POST'])
 def schooladmin_bookdetails():
     global sadmin_access
-    global helper
+    global book 
+    global image_source
     if (sadmin_access):
-        print("Entering Loop")
-        if (request.method == 'POST'): 
+        if (request.method == 'POST'):
             ISBN = request.form.get('details_button')
             connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
             scadmin_id = int(session.get("id")) 
@@ -979,24 +1082,27 @@ def schooladmin_bookdetails():
             else:
                 for result in cursor.stored_results(): 
                     book = result.fetchall()
-                    helper = book
-                    print('#################################', book)
+                    image_source = ''
+                    if (book[0][10] != ''):
+                        decoded_image = base64.b64decode(book[0][10])
+                        image_source = "data:image/jpeg;base64," + base64.b64encode(decoded_image).decode('utf-8')
             cursor.close()
             connection.close()
-            return render_template('schooladmin_details.html', book = book)
+            return render_template('schooladmin_details.html', book = book, image_source = image_source)  
     else: 
         return redirect('/')
-    book = helper
-    return render_template('schooladmin_details.html', book = book)    
+    
+    return render_template('schooladmin_details.html', book = book, image_source = image_source)  
+#-----------------------School Admin book->Details button----------------------- 
 
-
+#-----------------------School Admin users-----------------------
 @routes.route('/schooladmin/users', methods = ['GET', 'POST'])
 def schooladmin_userslist():  
     global sadmin_access 
     if (sadmin_access): 
         which_user = request.form.get('search_user')
         scadmin_id = int(session.get("id"))
-        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
         cursor = connection.cursor()
         query = ('SELECT school_id FROM school_admin WHERE scadmin_id = {};'.format(scadmin_id))
         cursor.execute(query)
@@ -1010,21 +1116,22 @@ def schooladmin_userslist():
         else:
             for result in cursor.stored_results(): 
                 users = result.fetchall()
-                print(users)
 
         cursor.close()
         connection.close()
     else: 
         redirect('/')
     return render_template('schooladmin_userslist.html', users = users)
+#-----------------------School Admin users-----------------------
 
+#-----------------------School Admin users waiting-----------------------
 @routes.route('/schooladmin/users/pending')
 def schooladmin_pendingusers():
     global sadmin_access 
     if (sadmin_access): 
         which_user = request.form.get('search_user')
         scadmin_id = int(session.get("id"))
-        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
         cursor = connection.cursor()
         query = ('SELECT school_id FROM school_admin WHERE scadmin_id = {};'.format(scadmin_id))
         cursor.execute(query)
@@ -1038,25 +1145,25 @@ def schooladmin_pendingusers():
         else:
             for result in cursor.stored_results(): 
                 users = result.fetchall()
-                print(users)
 
         cursor.close()
         connection.close()
     else: 
         redirect('/')
     return render_template('schooladmin_pendingusers.html', users = users)
+#-----------------------School Admin users waiting-----------------------
 
+#-----------------------School Admin users waiting->Approve button-----------------------
 @routes.route('/schooladmin/users/approve', methods=['GET', 'POST'])
 def schooladmin_approve_user():
     global sadmin_access 
     #try:
     if(sadmin_access):
         if(request.method == 'POST'):
-            print("##########",)
             #Taking the object from javascript event
             approve = request.form['schooladmin_approve_user']
             #Connection issues
-            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
             cursor = connection.cursor()
             query = ("""UPDATE user
                         SET user_status = 'Approved'
@@ -1070,18 +1177,19 @@ def schooladmin_approve_user():
             flash(str(e), "danger")
             abort()'''
     return render_template('schooladmin_pendingusers.html')
+#-----------------------School Admin users waiting->Approve button-----------------------
 
+#-----------------------School Admin users waiting->Decline button-----------------------
 @routes.route('/schooladmin/users/decline', methods=['GET', 'POST'])
 def schooladmin_decline_user():
     global sadmin_access 
     #try:
     if(sadmin_access):
         if(request.method == 'POST'):
-            print("##########",)
             #Taking the object from javascript event
             decline = request.form['schooladmin_decline_user']
             #Connection issues
-            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
             cursor = connection.cursor()
             query = ("""UPDATE user
                         SET user_status = 'Declined'
@@ -1095,18 +1203,19 @@ def schooladmin_decline_user():
         flash(str(e), "danger")
         abort()'''
     return render_template('schooladmin_pendingusers.html')
+#-----------------------School Admin users waiting->Decline button-----------------------
 
+#-----------------------School Admin users ->Deactivate button-----------------------
 @routes.route('/schooladmin/users/deactivate', methods=['GET', 'POST'])
 def schooladmin_deactivate_user():
     global sadmin_access 
     #try:
     if(sadmin_access):
         if(request.method == 'POST'):
-            print("##########",)
             #Taking the object from javascript event
             deactivate = request.form['schooladmin_deactivate_user']
             #Connection issues
-            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
             cursor = connection.cursor()
             query = ("""UPDATE user
                         SET user_status = 'Waiting'
@@ -1120,18 +1229,19 @@ def schooladmin_deactivate_user():
         flash(str(e), "danger")
         abort()'''
     return render_template('schooladmin_userslist.html')
+#-----------------------School Admin users ->Deactivate button-----------------------
 
+#-----------------------School Admin users ->Delete button-----------------------
 @routes.route('/schooladmin/users/delete', methods=['GET', 'POST'])
 def schooladmin_delete_user():
     global sadmin_access 
     #try:
     if(sadmin_access):
         if(request.method == 'POST'):
-            print("##########",)
             #Taking the object from javascript event
             delete = request.form['schooladmin_delete_user']
             #Connection issues
-            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
             cursor = connection.cursor()
             query = ("""DELETE
                         FROM user
@@ -1145,33 +1255,320 @@ def schooladmin_delete_user():
         flash(str(e), "danger")
         abort()'''
     return render_template('schooladmin_userslist.html')
+#-----------------------School Admin users ->Delete button-----------------------
 
-@routes.route('/schooladmin/borrowings/list')
+#-----------------------School Admin Approved Borrowings List-----------------------
+@routes.route('/schooladmin/borrowings/list', methods=['GET', 'POST'])
 def schooladmin_borrowlist():
+    global sadmin_access 
+    #try:
+    if(sadmin_access):
+        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
+        cursor = connection.cursor()
+
+        query = ('SELECT school_id FROM school_admin WHERE scadmin_id = {};'.format(int(session.get("id"))))
+        cursor.execute(query)
+        aux = cursor.fetchall()
+        school_id = int(aux[0][0])
+
+        query = ("""SELECT book.ISBN, book.book_title, author.first_name, author.last_name, user.first_name, user.last_name, borrowing.borrowing_date, borrowing.borrowing_id
+                 FROM book 
+                 INNER JOIN author ON book.ISBN = author.ISBN
+                 INNER JOIN borrowing ON borrowing.ISBN = book.ISBN
+                 INNER JOIN user ON user.user_id = borrowing.user_id 
+                 WHERE borrowing.borrowing_status = 'Approved' AND book.school_id = {};""".format(school_id))
+        cursor.execute(query)
+        aux = cursor.fetchall()
+    else:
+        return redirect('/')
+    '''except Exception as e:
+    flash(str(e), "danger")
+    abort()'''
+    return render_template('schooladmin_borrowlist.html', aux = aux)
+#-----------------------School Admin Approved Borrowings List-----------------------
+
+#-----------------------School Admin Approved Borrowings List->Return button-----------------------
+@routes.route('/schooladmin/borrowings/list_return', methods=['GET', 'POST'])
+def schooladmin_borrowlist_return():
+    global sadmin_access 
+    #try:
+    if(sadmin_access):
+        if(request.method == 'POST'):
+            returning = request.form['borrow_return']
+            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
+            cursor = connection.cursor()
+            #Select the given borrowing
+            query = ("SELECT * FROM borrowing WHERE borrowing_id = {};".format(int(returning)))
+            cursor.execute(query)
+            borrowing = cursor.fetchall()
+            borrowing = borrowing[0]
+ 
+            #Select the school from which this borrowing was done
+            query = ("SELECT school_id FROM school_admin WHERE scadmin_id = {};".format(int(borrowing[5])))
+            cursor.execute(query)
+            schoolid = cursor.fetchall()
+            schoolid = str(schoolid[0][0])
+
+            #Select the user that did this borrowing
+            query = ("""SELECT * FROM user WHERE user_id =  {};""".format(int(borrowing[2])))
+            cursor.execute(query)
+            user = cursor.fetchall()
+            user = user[0]
+            #And now doing the checks
+            #Checking Student
+            cursor.callproc('returnable', (int(returning), int(user[0]), int(borrowing[1]), schoolid))
+            connection.commit()
+
+            cursor.close()
+            connection.close()
+            return redirect('/schooladmin/borrowings/list')
+    else:
+        return redirect('/')
+    '''except Exception as e:
+    flash(str(e), "danger")
+    abort()'''
     return render_template('schooladmin_borrowlist.html')
+#-----------------------School Admin Approved Borrowings List->Return button-----------------------
 
-@routes.route('/schooladmin/borrowings/pending')
+#-----------------------School Admin Completed Borrowings List-----------------------
+@routes.route('/schooladmin/borrowings/completed', methods=['GET', 'POST'])
+def schooladmin_borrowlist_completed():
+    global sadmin_access 
+    #try:
+    if(sadmin_access):
+        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
+        cursor = connection.cursor()
+        query = ('SELECT school_id FROM school_admin WHERE scadmin_id = {};'.format(int(session.get("id"))))
+        cursor.execute(query)
+        aux = cursor.fetchall()
+        school_id = int(aux[0][0])
+        query = ("""SELECT book.ISBN, book.book_title, author.first_name, author.last_name, user.first_name, user.last_name, borrowing.borrowing_date
+                 FROM book 
+                 INNER JOIN author ON book.ISBN = author.ISBN
+                 INNER JOIN borrowing ON borrowing.ISBN = book.ISBN
+                 INNER JOIN user ON user.user_id = borrowing.user_id 
+                 WHERE borrowing.borrowing_status = 'Completed' AND book.school_id = {};""".format(school_id))
+        cursor.execute(query)
+        aux = cursor.fetchall()
+    else:
+        return redirect('/')
+    '''except Exception as e:
+    flash(str(e), "danger")
+    abort()'''
+    return render_template('schooladmin_borrowcomplete.html', aux = aux)
+#-----------------------School Admin Completed Borrowings List-----------------------
+
+#-----------------------School Admin Waiting Borrowings List-----------------------
+@routes.route('/schooladmin/borrowings/pending', methods=['GET', 'POST'])
 def schooladmin_pendingborrowings():
+    global sadmin_access 
+    #try:
+    if(sadmin_access):
+        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
+        cursor = connection.cursor()
+        query = ('SELECT school_id FROM school_admin WHERE scadmin_id = {};'.format(int(session.get("id"))))
+        cursor.execute(query)
+        aux = cursor.fetchall()
+        school_id = int(aux[0][0])
+        query = ("""SELECT book.ISBN, book.book_title, author.first_name, author.last_name, user.first_name, user.last_name, borrowing.borrowing_id, borrowing.borrowing_date
+                 FROM book 
+                 INNER JOIN author ON book.ISBN = author.ISBN
+                 INNER JOIN borrowing ON borrowing.ISBN = book.ISBN
+                 INNER JOIN user ON user.user_id = borrowing.user_id 
+                 WHERE borrowing.borrowing_status = 'Waiting' AND book.school_id = {};""".format(school_id))
+        cursor.execute(query)
+        aux = cursor.fetchall()
+    else:
+        return redirect('/')
+    '''except Exception as e:
+    flash(str(e), "danger")
+    abort()'''
+
+    return render_template('schooladmin_pendingborrowings.html', aux = aux)
+#-----------------------School Admin Waiting Borrowings List-----------------------
+
+
+#-----------------------School Admin Waiting Borrowings List->Proceed-----------------------
+@routes.route('/schooladmin/borrowings/pending_proceed', methods=['GET', 'POST'])
+def schooladmin_pendingborrowings_approve():
+    global sadmin_access
+    #try:
+    if(sadmin_access):
+        if(request.method == 'POST'):
+            approve = request.form['schooladmin_proceed_borrowing']
+
+            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
+            cursor = connection.cursor()
+            #Select the given borrowing
+            query = ("SELECT * FROM borrowing WHERE borrowing_id = {};".format(int(approve)))
+            cursor.execute(query)
+            borrowing = cursor.fetchall()
+            borrowing = borrowing[0]
+ 
+            #Select the school from which this borrowing was done
+            query = ("SELECT school_id FROM school_admin WHERE scadmin_id = {};".format(int(borrowing[5])))
+            cursor.execute(query)
+            schoolid = cursor.fetchall()
+            schoolid = str(schoolid[0][0])
+
+            #Select the user that did this borrowing
+            query = ("""SELECT * FROM user WHERE user_id =  {};""".format(int(borrowing[2])))
+            cursor.execute(query)
+            user = cursor.fetchall()
+            user = user[0]
+
+            #And now doing the checks
+            #Checking Student
+            checked = None
+            avail = None
+            cursor.callproc('borrowing_approve', (int(approve), int(user[0]), user[8], int(borrowing[1]), schoolid, checked, avail))
+            connection.commit()
+            result = cursor.stored_results()
+
+            listing = []
+            for i in result:
+                listing.append(i.fetchall()[0][0])
+            checked = listing[0]
+            avail = listing[1]
+            
+            cursor.close()
+            connection.close()
+            return redirect('/schooladmin/borrowings/pending')
+    else:
+        return redirect('/')
+    '''except Exception as e:
+    flash(str(e), "danger")
+    abort()'''
+
     return render_template('schooladmin_pendingborrowings.html')
+#-----------------------School Admin Waiting Borrowings List->Proceed-----------------------
 
-@routes.route('/schooladmin/reservelist')
+@routes.route('/schooladmin/reservelist', methods = ['GET', 'POST'])
 def schooladmin_reservelist():
-    return render_template('schooladmin_reservelist.html')
+    global sadmin_access
+    if (sadmin_access): 
+        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
+        cursor = connection.cursor()
+        query = ('SELECT school_id FROM school_admin WHERE scadmin_id = {};'.format(int(session.get("id"))))
+        cursor.execute(query)
+        aux = cursor.fetchall()
+        school_id = int(aux[0][0])
+        query = ("""SELECT book.ISBN, book.book_title, author.first_name, author.last_name, user.first_name, user.last_name, reservation.reservation_date, reservation.reservation_to_date, reservation.reservation_id
+                    FROM book
+                    INNER JOIN author ON book.ISBN = author.ISBN
+                    INNER JOIN reservation ON reservation.ISBN = book.ISBN
+                    INNER JOIN user ON user.user_id = reservation.user_id
+                    WHERE (reservation.reservation_status = 'Waiting' AND book.school_id = {});""".format(school_id))
+        cursor.execute(query)
+        reservations = cursor.fetchall()
+    return render_template('schooladmin_reservelist.html', reservations = reservations)
 
-@routes.route('/schooladmin/return/approve')
-def schooladmin_approvereturn():
-    return render_template('schooladmin_returnapprove.html')
+@routes.route('/schooladmin/reservelist/proceed', methods = ['GET', 'POST'])
+def schooladmin_reserve_proceed():
+    global sadmin_access
+    if (sadmin_access): 
+        if (request.method == 'POST'):
+            proceed_button = request.form['proceed_button']
 
+            connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
+            cursor = connection.cursor()
+
+            #find the school_id
+            query = ('SELECT school_id FROM school_admin WHERE scadmin_id = {};'.format(int(session.get("id"))))
+            cursor.execute(query)
+            aux = cursor.fetchall()
+            school_id = int(aux[0][0])
+
+            #find the reservation id
+            query = ("SELECT * FROM reservation WHERE reservation.reservation_id = {};".format(int(proceed_button)))
+            cursor.execute(query)
+            aux = cursor.fetchall()
+            reservation = aux[0] 
+
+            #find the userId
+            query = ("SELECT user_id FROM reservation WHERE reservation.reservation_id = {};".format(int(proceed_button)))
+            cursor.execute(query)
+            userId = int(cursor.fetchall()[0][0])
+
+            #find the ISBN
+            query = ("SELECT ISBN FROM reservation WHERE reservation.reservation_id = {};".format(int(proceed_button)))
+            cursor.execute(query)
+            ISBN = cursor.fetchall()[0][0]
+
+            #find the role
+            query = ("""SELECT job 
+                        FROM user
+                        WHERE user.user_id = {};""".format(userId))
+            cursor.execute(query)
+            job = cursor.fetchall()[0][0]
+
+            flag = None
+            #stored procedure for necessary checks 
+            result = cursor.callproc('reservation_approve', (userId, ISBN, job, school_id, int(reservation[0])))
+            connection.commit()
+            result = cursor.stored_results()
+            #flag = list(result)[-1].fetchone()[0]
+            #print(flag)
+            #flag is the result of the checks
+            
+            cursor.close()
+            connection.close()
+
+    else: 
+        return redirect('/')
+    
+    return redirect('/schooladmin/reservelist')
+
+
+#-----------------------School Admin Overdue Returns-----------------------
 @routes.route('/schooladmin/return/overdue')
 def schooladmin_overduereturn():
-    return render_template('schooladmin_returnoverdue.html')
+    global sadmin_access, aux
+    #try:
+    if(sadmin_access):
+        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
+        cursor = connection.cursor()
+
+        query = ('SELECT school_id FROM school_admin WHERE scadmin_id = {};'.format(int(session.get("id"))))
+        cursor.execute(query)
+        aux = cursor.fetchall()
+        school_id = int(aux[0][0])
+
+        query = ("""SELECT book.ISBN, book.book_title, author.first_name, author.last_name, user.first_name, user.last_name, borrowing.borrowing_date
+                    FROM book 
+                    INNER JOIN author ON book.ISBN = author.ISBN
+                    INNER JOIN borrowing ON borrowing.ISBN = book.ISBN
+                    INNER JOIN user ON user.user_id = borrowing.user_id 
+                    WHERE borrowing.borrowing_status = 'Approved' AND book.school_id = {}
+                        AND DATEDIFF(CURRENT_TIMESTAMP, CAST(borrowing_date AS DATETIME)) > 7;""".format(school_id))
+        cursor.execute(query)
+        aux = cursor.fetchall()
+
+        list = []
+        for i in aux:
+            helper = []
+            for j in range(0, 7):
+                helper.append(i[j])
+            list.append(helper)
+
+        for i in list:
+            i[6] = str(i[6]+timedelta(days = 7))
+        cursor.close()
+        connection.close()
+    else:
+        return redirect('/')
+    '''except Exception as e:
+    flash(str(e), "danger")
+    abort()'''
+    return render_template('schooladmin_returnoverdue.html', aux = list)
+#-----------------------School Admin Overdue Returns-----------------------
 
 @routes.route('/schooladmin/reviews/approve', methods = ['POST', 'GET'])
 def schooladmin_approvereviews():
     global sadmin_access
     if (sadmin_access):
         scadmin_id = int(session.get("id"))
-        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
+        connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
         cursor = connection.cursor()
         query = ('SELECT school_id FROM school_admin WHERE scadmin_id = {};'.format(scadmin_id))
         cursor.execute(query)
@@ -1271,3 +1668,41 @@ def schooladmin_reviewpercategory():
         connection.close()
     return render_template('schooladmin_reviewpercategory.html', reviews = reviews)
 #-----------------SCHOOL ADMIN TEMPLATES-------------------------------
+
+'''def queuer_init():
+    while(True):
+        queuer()
+        time.sleep(30)
+        
+def queuer():
+    connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config)
+    cursor = connection.cursor()
+    query = ("""SELECT * FROM reservation WHERE (reservation_status = 'Waiting Queue' AND reservation_to_date <= CAST(CURRENT_TIMESTAMP AS DATE))
+              ORDER BY reservation_to_date, reservation_date DESC;""")
+    cursor.execute(query)
+    priority = cursor.fetchall()
+    for i in priority:
+        query = ('UPDATE reservation SET reservation_to_date = CAST(CURRENT_TIMESTAMP AS DATE) WHERE reservation_id = {}'.format(i[0]))
+        cursor.execute(query)
+        connection.commit()
+
+        query = ('SELECT school_id FROM school_admin WHERE scadmin_id = {};'.format(i[6]))
+        cursor.execute(query)
+        aux = cursor.fetchall()
+        school_id = int(aux[0][0])
+        
+        query = ("SELECT * FROM book WHERE ISBN = {} AND school_id = {}".format(i[1], school_id))
+        cursor.execute(query)
+        aux = cursor.fetchall()
+        aux = aux[0]
+        
+        if(aux[6] > 0):
+            query = ("SELECT job FROM user WHERE user.user_id = {};".format(i[2]))
+            cursor.execute(query)
+            job = cursor.fetchall()[0][0]
+
+            cursor.callproc('reservation_approve', (i[2], aux[0], job, school_id, i[0]))
+            connection.commit()
+    
+scheduler_thread = threading.Thread(target=queuer_init)
+scheduler_thread.start()'''

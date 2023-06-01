@@ -25,14 +25,17 @@ VALUES ('user1', 'password1', 'Alice', 'Smith', '2005-01-01', 1, 'Student', 1, '
 ('user2', 'password2', 'Bob', 'Johnson', '1995-05-20', 2, 'Teacher', 1, 'Approved'),
 ('user3', 'password3', 'Chris', 'Lee', '2003-09-06', 3, 'Student', 1, 'Waiting'),
 ('user4', 'password4', 'David', 'Kim', '1998-12-31', 4, 'Teacher', 1, 'Declined'),
-('user5', 'password5', 'Emma', 'Wilson', '2002-07-15', 5, 'Student', 1, 'Approved');
+('user5', 'password5', 'Emma', 'Wilson', '2002-07-15', 5, 'Student', 1, 'Approved'),
+('geokoko@gmail.com', '123456789', 'George', 'Kokos', '2001-01-01', 1, 'Student', 1, 'Approved');
 
 INSERT INTO book (ISBN, school_id, book_title, publisher, no_pages, summary, available, sprache, scadmin_id)
 VALUES (1, 1 ,'Harry Potter and the Philosopher''s Stone', 'Bloomsbury Publishing', 223, 'The first book in the Harry Potter series.', 5, 'English', 1),
 (2, 2, 'The Lord of the Rings', 'George Allen & Unwin', 1178, 'A trilogy that tells the story of a hobbit named Frodo Baggins and his quest to destroy the One Ring.', 5, 'English', 3),
 (3, 3, 'To Kill a Mockingbird', 'J. B. Lippincott & Co.', 281, 'A novel set in the Southern United States during the Great Depression, and follows the story of a young girl named Scout Finch.', 5, 'English', 3),
 (4, 4, 'The Catcher in the Rye', 'Little, Brown and Company', 277, 'A novel that tells the story of Holden Caulfield, a teenage boy who is expelled from his school and goes on a journey of self-discovery.', 5, 'English', 2),
-(5, 5, 'The Great Gatsby', 'Charles Scribner''s Sons', 180, 'A novel set in the Roaring Twenties, and follows the story of a young man named Jay Gatsby and his obsession with a woman named Daisy Buchanan.', 5, 'English', 5);
+(5, 5, 'The Great Gatsby', 'Charles Scribner''s Sons', 180, 'A novel set in the Roaring Twenties, and follows the story of a young man named Jay Gatsby and his obsession with a woman named Daisy Buchanan.', 5, 'English', 5),
+(8, 1, 'Harry Potter and the Deathly Hallows', 'Bloomsbury Publishing', 700, 'Harry Potter kills Voldemort', 4, 'English', 1);
+
 
 INSERT INTO review (ISBN, user_id, review_date, txt, likert, review_status)
 VALUES (1, 1, '2022-04-15', 'Great book, loved the story and the characters!', 'Positive', 'Approved'),
@@ -46,21 +49,24 @@ VALUES ('J.K.', 'Rowling', 1),
 ('J.R.R.', 'Tolkien', 2),
 ('Harper', 'Lee', 3),
 ('J.D.', 'Salinger', 4),
-('F. Scott', 'Fitzgerald', 5);
+('F. Scott', 'Fitzgerald', 5),
+('J.K.', 'Rowling', 8);
 
 INSERT INTO category (category, ISBN)
 VALUES ('Fantasy', 1),
 ('Fantasy', 2),
 ('Classics', 3),
 ('Classics', 4),
-('Classics', 5);
+('Classics', 5),
+('Science-Fiction', 8);
 
 INSERT INTO keywords (keyword, ISBN)
 VALUES ('Magic', 1),
 ('Adventure', 2),
 ('Racism', 3),
 ('Coming of Age', 3),
-('Alienation', 4);
+('Alienation', 4),
+('Harry Potter', 8);
 
 -- Insert data into the reservation table
 INSERT INTO reservation (ISBN, user_id, reservation_date, reservation_status)

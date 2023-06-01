@@ -32,19 +32,29 @@
 <div class="form-outline" style = "display:table;" id="search">
     <form action="/schooladmin/booklist" method="POST">
         <div style = "display: table-cell;">
+            <span class = "input-group-text">
             <input type="search" class="form-control" id="find_book" placeholder="Search book title" name="search_book">
+            </span>
         </div>
         <div style = "display: table-cell;">
-            <input type="search" class="form-control" id="find_author" placeholder="Search author" name="search_author">    
+            <span class = "input-group-text">
+            <input type="search" class="form-control" id="find_author" placeholder="Search author" name="search_author">
+            </span>
         </div>
         <div style = "display: table-cell;">
+            <span class = "input-group-text">
             <input type="search" class="form-control" id="find_availability" placeholder="Search availability" name="search_availability">
+            </span>
         </div>
         <div style = "display: table-cell;">
+            <span class = "input-group-text">
             <input type="search" class="form-control" id="find_category" placeholder="Search category" name="search_category">   
+            </span>
         </div>
         <div style = "display: table-cell;">
+            <span class = "input-group-text">
             <button type="submit" class="btn btn-light">Search</button>
+            </span>
         </div>
     </form>
 </div>
@@ -60,10 +70,8 @@
     <a href="/schooladmin" class="btn btn-info" role="button">Home</a>
 </div>
 
-
-
 <div class="container">
-    <table class="table table-dark table-hover mt-5">
+    <table class="table table-dark table-hover" style = "margin-top: 4rem;">   
         <thead>
             <tr>
                 <th scope="col" class="col-1">ISBN</th>

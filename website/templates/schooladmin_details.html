@@ -1,0 +1,110 @@
+{% extends "home_page.html" %} {% block title %}Details{% endblock %}
+
+{% block button_header %}
+<style>
+    #topRight {
+        position: fixed;
+        top: 0;
+        right: 0;
+    }
+
+    #nextToRight {
+        position: fixed;
+        top: 0;
+        right: 100px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="topRight">
+    <a href="/" class = "btn btn-info" role="button">LogOut</a> 
+</div>
+
+<div id = "nextToRight"> 
+    <a href = "/schooladmin" class = "btn btn-info" role = "button">Home</a>
+</div>
+
+<div class = "container rounded bg-dark mt-5 mb-5" style = "color:white;">
+    <div class = "row">
+        <div class = "col-xl-4">
+            <div class = "mb-4">
+                <label class = "labels">
+                    <h5>Book Cover</h5>
+                </label>
+                <div class = "text-center"> 
+                    <img src = "{{image_source}}" alt = "Image" class = "img-fluid"/>
+                </div>
+            </div>
+        </div>
+
+        <div class = "col-xl-8">
+            <div class = "mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h1>Book Information</h1>
+                </div>
+                <div class = "card-body">
+                    <form>
+                        <div class = "mb-3">
+                            <label class = "labels">Title</label>
+                            <div class = "h-50 container rounded bg-white" style = "color:black;">
+                                <span style = 'vertical-align:middle;'>{{book[0][0]}}</span>
+                            </div>
+                        </div>
+                        <div class = "mb-3">
+                            <label class = "labels">Author</label>
+                            <div class = "h-50 container rounded bg-white" style = "color:black;">
+                                <span style = 'vertical-align:middle;'>{{book[0][1] + '' + book[0][2]}}</span>
+                            </div>
+                        </div>
+                        <div class = "mb-3">
+                            <label class = "labels">Publisher</label>
+                            <div class = "h-50 container rounded bg-white" style = "color:black;">
+                                <span style = 'vertical-align:middle;'>{{book[0][3]}}</span>
+                            </div>
+                        </div>
+                        <div class = "mb-3">
+                            <label class = "labels">Description</label>
+                            <div class = "h-50 container rounded bg-white" style = "color:black;">
+                                <span style = 'vertical-align:middle;'>{{book[0][4]}}</span>
+                            </div>
+                        </div>
+                        <div class = "mb-3">
+                            <label class = "labels">Number of Pages</label>
+                            <div class = "h-50 container rounded bg-white" style = "color:black;">
+                                <span style = 'vertical-align:middle;'>{{book[0][5]}}</span>
+                            </div>
+                        </div>
+                        <div class = "mb-3">
+                            <label class = "labels">Thematic Categories</label>
+                            <div class = "h-50 container rounded bg-white" style = "color:black;">
+                                <span style = 'vertical-align:middle;'>{{book[0][6]}}</span>
+                            </div>
+                        </div>
+                        <div class = "mb-3">
+                            <label class = "labels">Keywords</label>
+                            <div class = "h-50 container rounded bg-white" style = "color:black;">
+                                <span style = 'vertical-align:middle;'>{{book[0][7]}}</span>
+                            </div>
+                        </div>
+                        <div class = "mb-3">
+                            <label class = "labels">Language</label>
+                            <div class = "h-50 container rounded bg-white" style = "color:black;">
+                                <span style = 'vertical-align:middle;'>{{book[0][8]}}</span>
+                            </div>
+                        </div>
+                        <div class = "mb-3">
+                            <label class = "labels">ISBN</label>
+                            <div class = "h-50 container rounded bg-white" style = "color:black;">
+                                <span style = 'vertical-align:middle;'>{{book[0][9]}}</span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

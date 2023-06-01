@@ -12,7 +12,7 @@
 
 {% block content %}
 <div id="topRight">
-    <a href="/home" class="btn btn-info pull-right" role="button">LogOut</a>
+    <a href="/logout" class="btn btn-info pull-right" role="button">LogOut</a>
 </div>
 {% endblock %}
 
@@ -23,6 +23,9 @@
 </li>
 <li class="nav-item">
     <a class="nav-link" href="/admin/pending"> Pending School Admins </a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="/admin/show_admins"> School Admins </a>
 </li>
 <li class="nav-item">
     <a class="nav-link" href="#" data-toggle="tooltip" title="Overrides any previous backups"> Create Backup </a>
@@ -38,14 +41,13 @@
         OPERATIONS
     </a>
     <div class="dropdown-menu">
-        <a class="dropdown-item" href="#"> Show list with total </br> number of borrowings </br> per school </a>
-        <a class="dropdown-item" href="#"> Show writers who </br> belong in specific </br> category </a>
-        <a class="dropdown-item" href="#"> Show under 40 </br> teachers that have </br> borrowed the </br> most books
-        </a>
-        <a class="dropdown-item" href="#"> Question 4 </a>
-        <a class="dropdown-item" href="#"> Question 5 </a>
-        <a class="dropdown-item" href="#"> Question 6 </a>
-        <a class="dropdown-item" href="#"> Question 7 </a>
+        <a class="dropdown-item" href="/admin/question_1"> Question 1 </a>
+        <a class="dropdown-item" href="/admin/question_2"> Question 2 </a>
+        <a class="dropdown-item" href="/admin/question_3"> Question 3 </a>
+        <a class="dropdown-item" href="/admin/question_4"> Question 4 </a>
+        <a class="dropdown-item" href="/admin/question_5"> Question 5 </a>
+        <a class="dropdown-item" href="/admin/question_6"> Question 6 </a>
+        <a class="dropdown-item" href="/admin/question_7"> Question 7 </a>
     </div>
 </li>
 {% endblock %}

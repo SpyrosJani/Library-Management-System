@@ -44,17 +44,42 @@
                 </tr>
             </thead>
             <tbody> 
+                {% for i in reviews %}
                 <tr> 
-                    <td class="align-middle">978-2-12-345680-3</td>
-                    <td class="align-middle">Wuthering Heights</td>
-                    <td class="align-middle">Emily Bronte</td>
-                    <td class="align-middle">Vasiliki</td>
-                    <td class="align-middle">Tsouknida</td>
-                    <td class="align-middle">Click here</td>
-                    <td class="align-middle"><button type="button" class = "btn btn-outline-success">Approve</button></td>
-                    <td class="align-middle"><button type="button" class = "btn btn-outline-danger">Deny</button></td>
-                </tr>
+                    <td class="align-middle">{{i[0]}}</td>
+                    <td class="align-middle">{{i[1]}}</td>
+                    <td class="align-middle">{{i[2] + ' ' + i[3]}}</td>
+                    <td class="align-middle">{{i[4]}}</td>
+                    <td class="align-middle">{{i[5]}}</td>
+                    <td class="align-middle">{{i[6]}}</td>
+                    <td class="align-middle"><a href="/schooladmin/reviews/approve" class = "btn btn-outline-success" role = "button" onclick="handle_Click_Approve('{{i[7]}}')">Approve</a></td>
+                    <td class="align-middle"><a href="/schooladmin/reviews/approve" class = "btn btn-outline-danger" role = "button" onclick="handle_Click_Decline('{{i[7]}}')">Decline</a></td>
+                {% endfor %}
             </tbody>
         </table>
     </div>
+
+    <script>
+    function handle_Click_Approve(id) {
+        var formData = new FormData();
+        formData.append('schooladmin_approve_review', id);
+        
+        fetch('/schooladmin/reviews/approve_button', {
+        method: 'POST',
+        body: formData
+        });
+    }
+    </script>
+
+    <script>
+    function handle_Click_Decline(id) {
+        var formData = new FormData();
+        formData.append('schooladmin_decline_review', id);
+        
+        fetch('/schooladmin/reviews/decline_button', {
+        method: 'POST',
+        body: formData
+        });
+    }
+    </script>
 {% endblock %}

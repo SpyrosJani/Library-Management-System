@@ -1,4 +1,6 @@
----------------------------------------USER_BOOKSEARCH--------------------------------
+----------------------------------USER_SEARCHBOOK-----------------------------------------
+
+
 DELIMITER //
     CREATE DEFINER='root'@'localhost' PROCEDURE search_book(
         IN which_title VARCHAR(50),
@@ -9,11 +11,9 @@ DELIMITER //
         READS SQL DATA
         COMMENT 'Search Book'
     BEGIN
-        SELECT book.ISBN, book.book_title, author.first_name, author.last_name, book.publisher, book.no_pages, book.available, book.sprache, book.img, category.category
+        SELECT book.ISBN, book.book_title, author.first_name, author.last_name, book.publisher, book.no_pages, book.available, book.sprache, book.img
         FROM book
         INNER JOIN author ON book.ISBN = author.ISBN
-        INNER JOIN category ON book.ISBN = category.ISBN
-        INNER JOIN keywords ON book.ISBN = keywords.ISBN
         WHERE ((which_title = '' OR book.book_title LIKE CONCAT('%', which_title, '%')) AND
                 (which_author_name = '' OR
                 (author.first_name LIKE CONCAT('%', which_author_name, '%')) OR
@@ -28,7 +28,7 @@ DELIMITER //
 //
 DELIMITER ;
 
--- -------------------------------------SCADMIN_BOOKLIST--------------------------------
+---------------------------------------BOOKLIST--------------------------------
 DELIMITER //
     CREATE DEFINER='root'@'localhost' PROCEDURE booklist(
         IN which_title VARCHAR(50),
@@ -52,12 +52,12 @@ DELIMITER //
                  (which_category = '' OR 
                   EXISTS(SELECT * FROM category WHERE (category.ISBN = book.ISBN AND category.category = which_category))) AND
                   (book.school_id = schoolid))
-        ORDER BY book.title;
+        ORDER BY author.first_name;
     END;
 //
 DELIMITER ;
 
--------------------------------------BOOK DETAILS----------------------------------------------------
+-------------------------------------USERBOOK DETAILS----------------------------------------------------
 DELIMITER //
     CREATE DEFINER='root'@'localhost' PROCEDURE details(
         IN ISBN INT,
@@ -66,7 +66,7 @@ DELIMITER //
         READS SQL DATA
         COMMENT 'Details'
     BEGIN 
-        SELECT book.book_title, author.first_name, author.last_name, book.publisher, book.summary, book.no_pages, category.category, keywords.keywords, book.sprache, book.ISBN, book.img
+        SELECT book.book_title, author.first_name, author.last_name, book.publisher, book.summary, book.no_pages, category.category, keywords.keyword, book.sprache, book.ISBN, book.img
         FROM book 
         INNER JOIN author ON author.ISBN = book.ISBN
         INNER JOIN category ON category.ISBN = book.ISBN 
@@ -320,10 +320,13 @@ DELIMITER ;
 --Checking borrowing
 DELIMITER //
     CREATE DEFINER='root'@'localhost' PROCEDURE borrowing_approve(
+        IN borrowid INT,
         IN id INT,
         IN job NVARCHAR(50),
         IN bookISBN INT,
-        IN schoolid INT
+        IN schoolid INT,
+        OUT checked INT,
+        OUT availing INT
     )   
         READS SQL DATA
         COMMENT 'Borrow check'
@@ -344,18 +347,18 @@ DELIMITER //
         user_id = id
         GROUP BY user_id;
 
-        SELECT * INTO @againcheck_borrowing
-        FROM borrowing 
-        INNER JOIN book ON (book.ISBN = bookISBN AND borrowing.ISBN = bookISBN 
-                            AND book.school_id = schoolid AND borrowing.school_id = schoolid)
-        WHERE borrowing.borrowing_status = 'Approved' OR borrowing.borrowing_status = 'Waiting';
+        SELECT borrowing_id INTO @againcheck_borrowing
+        FROM borrowing
+        WHERE ((borrowing_status = 'Approved' OR borrowing_status = 'Waiting')
+                AND ISBN = bookISBN AND user_id = id AND 
+                schoolid = (SELECT school_id FROM school_admin WHERE scadmin_id = borrowing.scadmin_id) AND
+                borrowing_id != borrowid);
         SELECT FOUND_ROWS() INTO @againcheck_borrowing;
 
-        SELECT * INTO @againcheck_reserving
+        SELECT reservation_id INTO @againcheck_reserving
         FROM reservation 
-        INNER JOIN book ON (book.ISBN = bookISBN AND reservation.ISBN = bookISBN 
-                            AND book.school_id = schoolid AND reservation.school_id = schoolid)
-        WHERE reservation.reservation_status = 'Waiting';
+        WHERE (reservation_status = 'Waiting' AND ISBN = bookISBN AND user_id = id
+               AND schoolid = (SELECT school_id FROM school_admin WHERE scadmin_id = reservation.scadmin_id));
         SELECT FOUND_ROWS() INTO @againcheck_reserving;
 
         IF job = 'Student' THEN
@@ -369,6 +372,148 @@ DELIMITER //
                     SET @checker = 0;
             END IF;
         END IF;
+        SELECT @checker AS checked;
+
+        IF @checker = 0 THEN 
+            DELETE FROM borrowing WHERE borrowing_id = borrowid;
+        ELSEIF @checker = 1 THEN  
+            SELECT available INTO @avail FROM book WHERE (book.ISBN = bookISBN AND school_id = schoolid);
+            SELECT scadmin_id INTO @helper FROM borrowing WHERE borrowing_id = borrowid;
+            IF @avail = 0 THEN
+                INSERT INTO reservation(ISBN, user_id, reservation_date, reservation_to_date, reservation_status, scadmin_id)
+                VALUES (bookISBN, id, CAST(CURRENT_TIMESTAMP AS DATE), CAST(CURRENT_TIMESTAMP AS DATE), 'Waiting Queue', @helper);
+                DELETE FROM borrowing WHERE borrowing_id = borrowid;
+            ELSEIF @avail > 0 THEN 
+                UPDATE user 
+                SET books_borrowed = books_borrowed + 1
+                WHERE user_id = id;
+
+                UPDATE borrowing 
+                SET borrowing_date = CAST(CURRENT_TIMESTAMP AS DATE), borrowing_status = 'Approved' 
+                WHERE borrowing_id = borrowid;
+
+                UPDATE book 
+                SET available = available - 1
+                WHERE ISBN = bookISBN AND school_id = schoolid;
+            END IF;
+            SELECT @avail AS availing;
+        END IF;
+    END;
+//
+DELIMITER ;
+
+
+DELIMITER //
+    CREATE DEFINER='root'@'localhost' PROCEDURE returnable(
+        IN borrowid INT,
+        IN id INT,
+        IN bookISBN INT,
+        IN schoolid INT
+    )   
+        READS SQL DATA
+        COMMENT 'Borrow check'
+    BEGIN
+        UPDATE user 
+        SET books_borrowed = books_borrowed - 1
+        WHERE user_id = id;
+
+        UPDATE borrowing 
+        SET borrowing_status = 'Completed' 
+        WHERE borrowing_id = borrowid;
+
+        UPDATE book 
+        SET available = available + 1
+        WHERE book.ISBN = bookISBN AND book.school_id = schoolid;
+    END;
+//
+DELIMITER ;
+
+DELIMITER //
+    CREATE DEFINER='root'@'localhost' PROCEDURE reservation_approve(
+        IN userId INT,
+        IN bookISBN VARCHAR(50),
+        IN job NVARCHAR(50),
+        IN schoolid INT,
+        IN reserveId INT
+    )
+        READS SQL DATA
+        COMMENT 'Reserve Check'
+    BEGIN 
+        SET @flag = 1; 
+        
+        SELECT reservation_id
+        INTO @books_reserved
+        FROM reservation 
+        WHERE user_id = userId;
+        SELECT FOUND_ROWS() INTO @books_reserved; 
+
+        SELECT borrowing_id
+        INTO @books_overdue
+        FROM borrowing
+        WHERE (borrowing_status = 'Approved' AND 
+               DATEDIFF(CURRENT_TIMESTAMP, CAST(borrowing_date AS DATETIME)) > 6 AND
+               user_id = userId);
+        SELECT FOUND_ROWS() INTO @books_overdue;
+
+        SELECT borrowing_id
+        INTO @borrowed_samebook
+        FROM borrowing
+        WHERE (ISBN = bookISBN AND
+              (borrowing_status = 'Approved' OR borrowing_status = 'Waiting') AND
+              user_id = userId AND
+              schoolid = (SELECT school_admin.school_id FROM school_admin WHERE scadmin_id = borrowing.scadmin_id)
+              );
+        SELECT FOUND_ROWS() INTO @borrowed_samebook;
+
+        SELECT reservation_id
+        INTO @reserved_samebook
+        FROM reservation
+        WHERE (ISBN = bookISBN AND
+               reservation_status = 'Waiting' AND 
+               user_id = userId AND 
+               schoolid = (SELECT school_admin.school_id FROM school_admin WHERE scadmin_id = reservation.scadmin_id) AND
+               reservation_id != reserveId);
+        SELECT FOUND_ROWS() INTO @reserved_samebook;
+
+        IF job = 'Student' THEN 
+            IF (@books_reserved = 2) THEN
+                SET @flag = 0;
+            END IF;
+        ELSEIF job = 'Teacher' THEN 
+            IF (@books_reserved = 1) THEN 
+                SET @flag = 0; 
+            END IF; 
+        END IF; 
+
+        IF (@books_overdue > 0 OR @borrowed_samebook > 0 OR @reserved_samebook > 0) THEN 
+            SET @flag = 0; 
+        END IF; 
+
+        IF (@flag = 0) THEN 
+            DELETE FROM reservation
+            WHERE reservation_id = reserveId;
+
+        ELSEIF (@flag = 1) THEN 
+
+            SELECT available INTO @avail
+            FROM book
+            WHERE ISBN = bookISBN AND school_id = schoolid;
+
+            IF (@avail = 0) THEN 
+                UPDATE reservation
+                SET reservation_status = 'Waiting Queue'
+                WHERE reservation_id = reserveId;
+            
+            ELSEIF (@avail > 0) THEN 
+                SELECT scadmin_id INTO @schooladmin
+                FROM reservation
+                WHERE reservation_id = reserveId;
+
+                UPDATE reservation
+                SET reservation_status = 'Approved'
+                WHERE reservation_id = reserveId;
+            END IF;
+        END IF; 
     END;
 //
 DELIMITER ;

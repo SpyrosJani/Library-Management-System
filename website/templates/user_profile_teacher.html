@@ -27,7 +27,7 @@
 
 {% block content %}
     <div id="topRight">
-        <a href="/home" class = "btn btn-info" role="button">LogOut</a> 
+        <a href="/" class = "btn btn-info" role="button">LogOut</a> 
     </div>
 
     <div id = "nextToRight"> 
@@ -40,18 +40,20 @@
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h1>My Profile</h1>
                 </div>
+                {% for i in user %}
+                <form action = "/user/profile/update" method = "POST">
                 <div class = "row mt-2"> 
                     <div class = "col md-10">
                         <label class = "labels">
                             <h5>First Name</h5>
                         </label>
-                        <input class = "form-control" type = "text" placeholder="Enter first name" value="Teacher First Name">
+                        <input class = "form-control" type = "text" placeholder="Enter first name" value="{{i[0]}}" id = "first_name" name = "first_name" required/>
                     </div>
                     <div class = "col md-10">
                         <label class = "labels">
                             <h5>Last Name</h5>
                         </label>
-                        <input class = "form-control" type = "text" placeholder="Enter first name" value="Teacher Last Name">
+                        <input class = "form-control" type = "text" placeholder="Enter last name" value="{{i[1]}}" id = "last_name" name = "last_name"/>
                     </div>
                 </div>
                 <div class = "row mt-3"> 
@@ -59,13 +61,13 @@
                         <label class = "labels">
                             <h5>Role</h5>
                         </label>
-                        <input class = "form-control" type = "text" placeholder="Enter first name" value="Teacher">
+                        <input class = "form-control" type = "text" placeholder="Enter role" value="{{i[2]}}" name = "role" readonly>
                     </div>
                     <div class = "col md-10">
                         <label class = "labels">
                             <h5>Date of Birth</h5>
                         </label>
-                        <input class = "form-control" type = "date" placeholder="Enter first name" value="">
+                        <input class = "form-control" type = "date" placeholder="Enter date of birth" value="{{i[3]}}" name = "birth_date" readonly>
                     </div>
                 </div>
                 <div class = "row mt-3">
@@ -73,16 +75,33 @@
                         <label class = "labels">
                             <h5>School</h5>
                         </label>
-                        <input class = "form-control" type = "text" placeholder="Enter first name" value="School">
+                        <input class = "form-control" type = "text" placeholder="Enter school" value="{{i[4]}}" id = "school" name = "school" readonly>
                     </div>
                     <div class = "col md-10">
                         <label class = "labels">
                             <h5>Email Address</h5>
                         </label>
-                        <input class = "form-control" type = "email" placeholder="Enter first name" value="example@gmail.com">
+                        <input class = "form-control" type = "email" placeholder="Enter email" value="{{i[5]}}" name = "email" id = "email"/>
                     </div>
                 </div>
+                <div class = "row mt-5" style = "justify-content: center;">
+                    <a href="/user/profile" class = "btn btn-info" role="button" style = "width:10%;" onclick="handle_Click_Update('{{i[6]}}', document.getElementById('first_name').value, document.getElementById('last_name').value, document.getElementById('email').value)">Submit Changes</a> 
+                </div>
+                </form>
+                {% endfor %}
             </div>
         </div>
     </div>
+
+    <script>
+    function handle_Click_Update(id, first_name, last_name, email) {
+      var formData = new FormData();
+      formData.append('update_button', [id, first_name, last_name, email]);
+        
+      fetch('/user/profile/update', {
+        method: 'POST',
+        body: formData
+      });
+    }
+    </script>
 {% endblock %}

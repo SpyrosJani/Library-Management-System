@@ -1,0 +1,50 @@
+{% extends "home_page.html" %} {% block title %}School List{% endblock %}
+
+{% block button_header %}
+<style>
+#topRight {
+    position:fixed;
+    top:0;
+    right:0;
+}
+#nextToRight {
+    position:fixed;
+    top:0;
+    right:100px;
+}
+.small-table {
+        width: 40%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div id="topRight">
+        <a href="/" class = "btn btn-info" role="button">LogOut</a> 
+    </div>
+
+    <div id = "nextToRight"> 
+        <a href = "/admin" class = "btn btn-info" role = "button">Home</a>
+    </div>
+
+    <div class = "container"> 
+        <table class = "table table-dark table-hover mt-5 small-table"> 
+            <thead> 
+                <tr>
+                    <th scope="col" class = "col-2">Teacher Name</th>
+                    <th scope="col" class = "col-1">Number of Borrowings</th>
+                </tr>
+            </thead>
+            {% for i in question_3 %}
+                <thead> 
+                    <tr>
+                        <td class="align-middle">{{i[1]+' '+i[2]}}</div></td>
+                        <td class="align-middle">{{i[0]}}</div></td>
+                    </tr>
+                </thead>
+            {% endfor %}
+        </table>
+    </div>
+{% endblock %}

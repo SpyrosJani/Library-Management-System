@@ -22,37 +22,55 @@
 
 {% block content %}
     <div id="topRight">
-        <a href="/home" class = "btn btn-info" role="button">LogOut</a> 
+        <a href="/" class = "btn btn-info" role="button">LogOut</a> 
     </div>
 
     <div id = "nextToRight"> 
         <a href = "/admin" class = "btn btn-info" role = "button">Home</a>
     </div>
 
-    <div class = "container"> 
+    <div class = "container" style = "width: 70%;"> 
         <table class = "table table-dark table-hover mt-5"> 
             <thead> 
                 <tr>
                     <th scope="col" class="col-2">School Library Admin</th>
                     <th scope="col" class="col-2">School</th>
-                    <th scope="col" class="col-2">Approve</th>
-                    <th scope="col" class="col-2">Deny</th>
+                    <th scope="col" class="col-1">Approve</th>
+                    <th scope="col" class="col-1">Deny</th>
                 </tr>
             </thead>
-            <tbody> 
-                <tr> 
-                    <td class="align-middle">Vasiliki Tsouknida</td>
-                    <td class="align-middle">GEL Sofadwn</td>
-                    <td class="align-middle"><button type="button" class = "btn btn-outline-success">Approve</button></td>
-                    <td class="align-middle"><button type="button" class = "btn btn-outline-danger">Deny</button></td>
-                </tr>
-                <tr> 
-                    <td class="align-middle">Elena Vouvali</td>
-                    <td class="align-middle">Saint-Joseph</td>
-                    <td class="align-middle"><button type="button" class = "btn btn-outline-success">Approve</button></td>
-                    <td class="align-middle"><button type="button" class = "btn btn-outline-danger">Deny</button></td>
-                </tr>
-            </tbody>
+            {% for i in school_admin %}
+                <thead> 
+                    <tr>
+                        <td class="align-middle">{{i[0]+' '+i[1]}}</td>
+                        <td class="align-middle">{{i[2]}}</td>       
+                        <td class="align-middle"><a href = "/admin/pending" class="btn btn-outline-success" role = "button" onclick="handle_Click_Approve('{{i[3]}}')">Approve</a></td>
+                        <td class="align-middle"><a href = "/admin/pending" class="btn btn-outline-danger" role = "button" onclick="handle_Click_Decline('{{i[3]}}')">Decline</a></td>
+                    </tr>
+                </thead>
+            {% endfor %}
         </table>
     </div>
+<script>
+    function handle_Click_Approve(id) {
+        var formData = new FormData();
+        formData.append('admin_schooladmin_approve_button', id);
+        
+        fetch('/admin/pending_approve', {
+        method: 'POST',
+        body: formData
+        });
+    }
+</script>
+<script>
+    function handle_Click_Decline(id) {
+        var formData = new FormData();
+        formData.append('admin_schooladmin_decline_button', id);
+        
+        fetch('/admin/pending_decline', {
+        method: 'POST',
+        body: formData
+        });
+    }
+</script>
 {% endblock %}

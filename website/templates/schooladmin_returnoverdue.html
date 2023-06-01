@@ -41,6 +41,18 @@
                     <th scope="col" class = "col-2">Due Date</th>
                 </tr>
             </thead>
+            {% for i in aux %}
+            <thead> 
+                <tr>
+                    <td class="align-middle">{{i[0]}}</div></td>
+                    <td class="align-middle">{{i[1]}}</div></td>
+                    <td class="align-middle">{{i[2]+' '+i[3]}}</div></td>
+                    <td class="align-middle">{{i[4]}}</div></td>
+                    <td class="align-middle">{{i[5]}}</div></td>
+                    <td class="align-middle">{{i[6]}}</div></td>
+                </tr>
+            </thead>
+        {% endfor %}
         </table>
     </div>
 {% endblock %}

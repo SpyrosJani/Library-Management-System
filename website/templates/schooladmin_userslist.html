@@ -18,28 +18,42 @@
     right:100px;
 }
 #search {
-    position:fixed;
-    left:0;
-    top:97px;
+    position:fixed;   
+    left:500px;
+    top:0px;
 }
 </style>
 {% endblock %}
 
 {% block content %}
+    <div id = "topLeft"> 
+        <a href="/schooladmin/users/pending" class = "btn btn-info" role = "button">See Pending Users</a>
+    </div>
     <div id="topRight">
-        <a href="/home" class = "btn btn-info" role="button">LogOut</a> 
+        <a href="/" class = "btn btn-info" role="button">LogOut</a> 
     </div>
 
     <div id = "nextToRight"> 
         <a href = "/schooladmin" class = "btn btn-info" role = "button">Home</a>
     </div>
 
-    <div id = "search">
-        <button class="btn btn-primary" type="submit">Search</button>
+    <div class="form-outline" style = "display:table;" id="search">
+        <form action="/schooladmin/users" method="POST">
+            <div style = "display: table-cell;">
+                <span class = "input-group-text">
+                <input type="search" class="form-control" id="find_book" placeholder="Search user" name="search_user">
+                </span>
+            </div>
+            <div style = "display: table-cell;">
+                <span class = "input-group-text">
+                <button type="submit" class="btn btn-light">Search</button>
+                </span>
+            </div>
+        </form>
     </div>
 
     <div class = "container"> 
-        <table class = "table table-dark table-hover mt-5"> 
+        <table class = "table table-dark table-hover" style = "margin-top: 4rem;">
             <thead> 
                 <tr>
                     <th scope="col" class = "col-2">First Name</th>
@@ -52,50 +66,41 @@
                 </tr>
             </thead>
             <tbody>
+                {% for i in users %}
                 <tr>
-                    <td> 
-                        <form class = "d-flex"> 
-                            <input class="form-control me-1" type="search" placeholder="Search First Name" aria-label="Search">
-                        </form>
-                    </td>
-                    <td> 
-                        <form class = "d-flex"> 
-                            <input class="form-control me-1" type="search" placeholder="Search Last Name" aria-label="Search">
-                        </form>
-                    </td>
-                    <td> 
-                        <form class = "d-flex"> 
-                            <input class="form-control me-1" type="search" placeholder="Search Role" aria-label="Search">
-                        </form>
-                    </td>
-                    <td> 
-                        <form class = "d-flex"> 
-                            <input class="form-control me-1" type="search" placeholder="Search Date of Birth" aria-label="Search">
-                        </form>
-                    </td>
-                    <td> 
-                        <form class = "d-flex"> 
-                            <input class="form-control me-1" type="search" placeholder="Search No. of Borrowed Books" aria-label="Search">
-                        
-                        </form>
-                    </td>
-                    <td>
-            
-                    </td>
-                    <td>
-
-                    </td>
+                    <td class="align-middle">{{i[0]}}</td>
+                    <td class="align-middle">{{i[1]}}</td>
+                    <td class="align-middle">{{i[2]}}</td>
+                    <td class="align-middle">{{i[3]}}</td>
+                    <td class="align-middle">{{i[4]}}</td>
+                    <td class="align-middle"><a href="/schooladmin/users" class = "btn btn-outline-warning" role = "button" onclick="handle_Click_Deactivate('{{i[6]}}')">Deactivate</a></td>
+                    <td class="align-middle"><a href="/schooladmin/users" class = "btn btn-outline-danger" role = "button" onclick="handle_Click_Delete('{{i[6]}}')">Delete</a></td>
                 </tr>
-                <tr>
-                    <td class="align-middle">Miltos</td>
-                    <td class="align-middle">Kolovos</td>
-                    <td class="align-middle">Student</td>
-                    <td class="align-middle">18/05/2023</td>
-                    <td class="align-middle">1</td>
-                    <td class="align-middle"><button type="button" class = "btn btn-outline-warning">Deactivate</button></td>
-                    <td class="align-middle"><button type="button" class = "btn btn-outline-danger">Delete</button></td>
-                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
+
+    <script>
+    function handle_Click_Deactivate(id) {
+        var formData = new FormData();
+        formData.append('schooladmin_deactivate_user', id);
+        
+        fetch('/schooladmin/users/deactivate', {
+        method: 'POST',
+        body: formData
+        });
+    }
+    </script>
+    <script>
+    function handle_Click_Delete(id) {
+        var formData = new FormData();
+        formData.append('schooladmin_delete_user', id);
+        
+        fetch('/schooladmin/users/delete', {
+        method: 'POST',
+        body: formData
+        });
+    }
+    </script>
 {% endblock %}

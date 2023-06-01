@@ -27,7 +27,7 @@
 
 {% block content %}
     <div id="topRight">
-        <a href="/home" class = "btn btn-info" role="button">LogOut</a> 
+        <a href="/" class = "btn btn-info" role="button">LogOut</a> 
     </div>
 
     <div id = "nextToRight"> 
@@ -47,15 +47,40 @@
                 </tr>
             </thead>
             <tbody>
+                {% for i in users %}
                 <tr>
-                    <td class="align-middle">Miltos</td>
-                    <td class="align-middle">Kolovos</td>
-                    <td class="align-middle">Student</td>
-                    <td class="align-middle">18/05/2023</td>
-                    <td class="align-middle"><button type="button" class = "btn btn-outline-success">Approve</button></td>
-                    <td class="align-middle"><button type="button" class = "btn btn-outline-danger">Deny</button></td>
+                    <td class="align-middle">{{i[0]}}</td>
+                    <td class="align-middle">{{i[1]}}</td>
+                    <td class="align-middle">{{i[2]}}</td>
+                    <td class="align-middle">{{i[3]}}</td>
+                    <td class="align-middle"><a href="/schooladmin/users/pending" class = "btn btn-outline-success" role = "button" onclick="handle_Click_Approve('{{i[6]}}')">Approve</a></td>
+                    <td class="align-middle"><a href="/schooladmin/users/pending" class = "btn btn-outline-danger" role = "button" onclick="handle_Click_Decline('{{i[6]}}')">Deny</a></td>
                 </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
+
+    <script>
+    function handle_Click_Approve(id) {
+        var formData = new FormData();
+        formData.append('schooladmin_approve_user', id);
+        
+        fetch('/schooladmin/users/approve', {
+        method: 'POST',
+        body: formData
+        });
+    }
+    </script>
+    <script>
+        function handle_Click_Decline(id) {
+            var formData = new FormData();
+            formData.append('schooladmin_decline_user', id);
+            
+            fetch('/schooladmin/users/decline', {
+            method: 'POST',
+            body: formData
+            });
+        }
+    </script>
 {% endblock %}

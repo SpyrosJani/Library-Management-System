@@ -6,20 +6,19 @@
 
 
 
-{% include "flash.html" %}
 
 {% block content %}
 <div class = "container rounded bg-dark mt-5 mb-5" style = 'color:white;'>
     <form method="POST">
     <h3 align="center">Sign Up</h3>
     <div class="form-group">
-        <label for="email">Email Address</label>
+        <label for="sign_login">Login ID</label>
         <input
-            type="email"
+            type="text"
             class="form-control"
-            id="email"
-            name="email"
-            placeholder="Enter email"
+            id="sign_login"
+            name="sign_login"
+            placeholder="Enter ID"
             required/>
     </div>
     <div class="form-group">

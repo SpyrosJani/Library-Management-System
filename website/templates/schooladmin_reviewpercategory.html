@@ -37,6 +37,14 @@
                     <th scope="col" class = "col-2">Average Review</th>
                 </tr>
             </thead>
+            <tbody>
+                {% for i in reviews %}
+                <tr>
+                    <td class = "align-middle">{{i[0]}}</td>
+                    <td class = "align-middle">{{i[1]}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
     </div>
 {% endblock %}

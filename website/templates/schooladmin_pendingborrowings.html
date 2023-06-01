@@ -38,21 +38,35 @@
                     <th scope="col" class="col-2">Author</th>
                     <th scope="col" class="col-2">User First Name</th>
                     <th scope="col" class="col-2">User Last Name</th>
-                    <th scope="col" class="col-2">Approve</th>
-                    <th scope="col" class="col-2">Deny</th>
+                    <th scope="col" class="col-2">Date</th>
+                    <th scope="col" class="col-2">Proceed</th>
                 </tr>
             </thead>
             <tbody> 
+                {% for i in aux %}
                 <tr> 
-                    <td class="align-middle">978-2-12-345680-3</td>
-                    <td class="align-middle">Wuthering Heights</td>
-                    <td class="align-middle">Emily Bronte</td>
-                    <td class="align-middle">Vasiliki</td>
-                    <td class="align-middle">Tsouknida</td>
-                    <td class="align-middle"><button type="button" class = "btn btn-outline-success">Approve</button></td>
-                    <td class="align-middle"><button type="button" class = "btn btn-outline-danger">Deny</button></td>
+                    <td class="align-middle">{{i[0]}}</td>
+                    <td class="align-middle">{{i[1]}}</td>
+                    <td class="align-middle">{{i[2]+' '+i[3]}}</td>
+                    <td class="align-middle">{{i[4]}}</td>
+                    <td class="align-middle">{{i[5]}}</td>
+                    <td class="align-middle">{{i[7]}}</td>
+                    <td class="align-middle"><a href="#" class = "btn btn-outline-warning" role = "button" onclick="handle_Click_Proceed('{{i[6]}}')">Proceed</a></td>
                 </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
+
+    <script>
+        function handle_Click_Proceed(id) {
+            var formData = new FormData();
+            formData.append('schooladmin_proceed_borrowing', id);
+            
+            fetch('/schooladmin/borrowings/pending_proceed', {
+            method: 'POST',
+            body: formData
+            });
+        }
+    </script>
 {% endblock %}

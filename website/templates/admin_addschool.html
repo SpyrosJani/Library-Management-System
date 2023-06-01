@@ -22,15 +22,16 @@
 
 {% block content %}
     <div id="topRight">
-        <a href="/home" class = "btn btn-info" role="button">LogOut</a> 
+        <a href="/" class = "btn btn-info" role="button">LogOut</a> 
     </div>
 
     <div id = "nextToRight"> 
         <a href = "/admin" class = "btn btn-info" role = "button">Home</a>
     </div>
 
-    <div class = "container mt-5" style = "color:white; background-color:rgb(33, 46, 46);">
+    <div class = "container pt-5 pb-5 mt-5" style = "color:white; background-color:rgb(33, 46, 46); width:70%">
         <h3 align="center">Add a New School</h3>
+        <div class = "align-center" style = "width: 80%; text-align:center; margin: 0 auto;">
         <form method="POST">
             <div class="form-group">
                 <label for = "school_name">School Name:</label>
@@ -86,5 +87,6 @@
                 <button type = "submit" class = "btn btn-primary">Add School</button>
             </div>
         </form>
+        </div>
     </div>
 {% endblock %}

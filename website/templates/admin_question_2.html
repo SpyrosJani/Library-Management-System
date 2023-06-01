@@ -1,0 +1,102 @@
+{% extends "home_page.html" %} {% block title %}School List{% endblock %}
+
+{% block button_header %}
+<style>
+#topRight {
+    position:fixed;
+    top:0;
+    right:0;
+}
+#nextToRight {
+    position:fixed;
+    top:0;
+    right:100px;
+}
+#search {
+    position:fixed;
+    left:0;
+    top:80px;
+}
+.small-table-left {
+        width: 30%;
+        float: left;
+    }
+.small-table-right {
+        width: 50%;
+        float: right;
+    }
+.small-table {
+        width: 30%;
+    }
+    
+</style>
+{% endblock %}
+
+{% block content %}
+    <div id="topRight">
+        <a href="/" class = "btn btn-info" role="button">LogOut</a> 
+    </div>
+
+    <div id = "nextToRight"> 
+        <a href = "/admin" class = "btn btn-info" role = "button">Home</a>
+    </div>
+    
+
+    <div class = "container">
+        
+        <table class = "table table-dark table-hover mt-5 small-table"> 
+            <tbody>
+                <tr>
+                    <form action="/admin/question_2" method="POST">
+                        <td> 
+                            <label for="search_category">Search by category:</label>
+                            <select 
+                                id = "search_category"
+                                class= "form-control"
+                                name = "search_category">
+                                    <option value=""></option>
+                                    {% for i in categories %}
+                                        <option value="{{i}}">{{i}}</option>
+                                    {% endfor %}
+                            </select>
+                        </td>
+                        <div id = "search">
+                            <button type="submit" class="btn btn-info">Search</button>
+                        </div>
+                    </form>
+                </tr>
+            </tbody>
+        </table>
+        
+        <table class = "table table-dark table-hover mt-5 small-table-left" > 
+            <thead> 
+                <tr>
+                    <th scope="col" class = "col-2">Author Name</th>
+                </tr>
+            </thead>
+            <thead> 
+                <tr>
+                    {% for i in question_2_1 %}
+                        <td class="align-middle">{{i[0]+' '+i[1]}}</div></td>
+                    {% endfor %}
+                </tr>
+            </thead>
+        </table>
+
+        <table class = "table table-dark table-hover mt-5 small-table-right"> 
+            <thead> 
+                <tr>
+                    <th scope="col" class = "col-2">Teacher Name</th>
+                </tr>
+            </thead>
+            <thead> 
+                <tr>
+                    {% for i in question_2_2 %}
+                        <td class="align-middle">{{i[0]+' '+i[1]}}</div></td>
+                    {% endfor %}
+                </tr>
+            </thead>
+        </table>
+
+    </div>
+{% endblock %}
