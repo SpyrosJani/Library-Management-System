@@ -1,4 +1,4 @@
-host: localhost
-user: root
-password: password
 database: librarydbms
+host: localhost
+password: password
+user: root
