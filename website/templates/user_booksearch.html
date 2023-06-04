@@ -19,7 +19,7 @@
 }
 #search {
     position:fixed;
-    left:250px;
+    left:300px;
     top:5px;
 }
 </style>
@@ -46,17 +46,17 @@
             </div>
             <div style = "display: table-cell;">
                 <span class = "input-group-text">
-                <button type="submit" class="btn btn-light">Search</button>
+                <button type="submit" class="btn btn-light"><i class="fa-solid fa-magnifying-glass"></i></button>
                 </span>
             </div>
         </form>
     </div>
     <div id="topRight">
-        <a href="/" class = "btn btn-info" role="button">LogOut</a> 
+        <a href="/" class = "btn btn-info" role="button">LogOut <i class="fa-solid fa-right-from-bracket"></i></a> 
     </div>
 
     <div id = "nextToRight"> 
-        <a href = "/user" class = "btn btn-info" role = "button">Home</a>
+        <a href = "/user" class = "btn btn-info" role = "button">Home <i class = "fa fa-house"></i></a>
     </div>
     <div class = "container"> 
         <table class = "table table-dark table-hover" style = "margin-top: 4rem;"> 
@@ -81,40 +81,88 @@
                     <td class = "align-middle">{{ book[5] }}</td>
                     <td class = "align-middle">{{ book[6] }}</td>
                     <td class = "align-middle">
-                        <button type = "button" class = "btn btn-outline-success">Borrow</button>
-                        <button type = "button" class = "btn btn-outline-warning">Reserve</button>
+                        <a href = "/user/booksearch/borrow" class="btn btn-success" role = "button" onclick="handle_Click_Borrow('{{book[0]}}')">Borrow</a>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#reserveDate" onclick="handle_Click_Reserve('{{book[0]}}')">
+                            Reserve
+                        </button>
                     </td>
                     <td class = "align-middle">
-                        <a class = "btn btn-outline-light" href = "/user/booksearch/review" role = "button" onclick="handle_Click_Review('{{ book[0] }}')">Write Review</a>
+                        <a class = "btn btn-outline-light" href = "/submit_isbn" role = "button" onclick="handle_Click_Review('{{ book[0] }}')">Write Review</a>
                     </td>
-                    <<td class = "align-middle">
-                        <a class="btn btn-outline-light" href = "/user/booksearch/details" role = "button" onclick="handle_Click_Details('{{ book[0] }}')">Details</a>
+                    <td class = "align-middle">
+                        <a href = "/user/booksearch/details_aux" class="btn btn-light" role = "button" onclick="handle_Click_Details('{{book[0]}}')">Details</a>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-    <script>
-        function handle_Click_Details(buttonId) {
-            var formData = new FormData();
-            formData.append('details_button', buttonId);
-        
-            fetch('/user/booksearch/details', {
-                method: 'POST',
-                body: formData
-            });
-        }
-    </script>
-    <script>
-        function handle_Click_Review(buttonId) {
-            var formData = new FormData();
-            formData.append('writereview_button', buttonId);
+<form action = "/user/booksearch/reserve" method = 'POST'>
+    <div class="modal fade" id="reserveDate" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="reserve_to_date" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
 
-            fetch('/submit_isbn', {
-                method: 'POST',
-                body: formData
-            });
-        }
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <h4 class="modal-title" id="#reserve_to_date">Enter Date</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label = "Close"></button>
+                </div>
+
+                <!-- Modal body -->
+                <div class="modal-body">
+                    <input class = "form-control" type = "date" placeholder = "When do you want to borrow the book?" name = "reserve_to_date" required/>
+                </div>
+
+                <!-- Modal footer -->
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Reserve</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</form>
+
+    <script>
+    function handle_Click_Borrow(buttonId) {
+      var formData = new FormData();
+      formData.append('borrow_button', buttonId);
+        
+      fetch('/user/booksearch/borrow', {
+        method: 'POST',
+        body: formData
+      });
+    }
+    
+    function handle_Click_Reserve(buttonId) {
+      var formData = new FormData();
+      formData.append('reserve_button', buttonId);
+        
+      fetch('/user/booksearch/reserve_aux', {
+        method: 'POST',
+        body: formData
+      });
+    }
+
+    function handle_Click_Review(buttonId) {
+        var formData = new FormData();
+        formData.append('writereview_button', buttonId);
+
+        fetch('/submit_isbn', {
+            method: 'POST',
+            body: formData
+        });
+    }
+     
+    function handle_Click_Details(buttonId) {
+      var formData = new FormData();
+      formData.append('details_button', buttonId);
+        
+      fetch('/user/booksearch/details_aux', {
+        method: 'POST',
+        body: formData
+      });
+    }
     </script>
 {% endblock %}

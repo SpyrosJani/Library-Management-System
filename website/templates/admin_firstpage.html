@@ -9,10 +9,10 @@
     }
 </style>
 {% endblock %}
-
+{% include "flash.html" %}
 {% block content %}
 <div id="topRight">
-    <a href="/logout" class="btn btn-info pull-right" role="button">LogOut</a>
+    <a href="/" class="btn btn-info pull-right" role="button">LogOut <i class="fa-solid fa-right-from-bracket"></i></a>
 </div>
 {% endblock %}
 
@@ -28,10 +28,10 @@
     <a class="nav-link" href="/admin/show_admins"> School Admins </a>
 </li>
 <li class="nav-item">
-    <a class="nav-link" href="#" data-toggle="tooltip" title="Overrides any previous backups"> Create Backup </a>
+    <a class="nav-link" href="/admin/backup" data-toggle="tooltip" title="Overrides any previous backups"> Create Backup </a>
 </li>
 <li class="nav-item">
-    <a class="nav-link" href="#" data-toggle="tooltip"
+    <a class="nav-link" href="/admin/restore" data-toggle="tooltip"
         title="Restores the most recently backed up version of the database">
         Restore Database
     </a>

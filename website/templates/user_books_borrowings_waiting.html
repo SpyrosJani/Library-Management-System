@@ -1,4 +1,4 @@
-{% extends "home_page.html" %} {% block title %}Completed Borrowings List{% endblock %}
+{% extends "home_page.html" %} {% block title %}My Waiting Borrowings{% endblock %} 
 
 {% block button_header %}
 <style>
@@ -17,6 +17,11 @@
     top:0;
     right:100px;
 }
+#search {
+    position:fixed;
+    left:300px;
+    top:5px;
+}
 </style>
 {% endblock %}
 
@@ -26,30 +31,26 @@
     </div>
 
     <div id = "nextToRight"> 
-        <a href = "/schooladmin" class = "btn btn-info" role = "button">Home <i class = "fa fa-house"></i></a>
+        <a href = "/user" class = "btn btn-info" role = "button">Home <i class = "fa fa-house"></i></a>
     </div>
 
     <div class = "container"> 
-        <table class = "table table-dark table-hover mt-5"> 
+        <table class = "table table-dark table-hover" style = "margin-top: 4rem;"> 
             <thead> 
                 <tr>
                     <th scope="col" class = "col-2">ISBN</th>
                     <th scope="col" class = "col-2">Title</th>
                     <th scope="col" class = "col-2">Author</th>
-                    <th scope="col" class = "col-2">User First Name</th>
-                    <th scope="col" class = "col-2">User Last Name</th>
-                    <th scope="col" class = "col-2">Date</th>
+                    <th scope="col" class = "col-2">Borrowing Date(Registration)</th>
                 </tr>
             </thead>
             <tbody>
-                {% for i in aux %}
+                {% for i in books_waiting %}
                 <tr>
-                    <td class="align-middle">{{i[0]}}</td>
-                    <td class="align-middle">{{i[1]}}</td>
-                    <td class="align-middle">{{i[2]+' '+i[3]}}</td>
-                    <td class="align-middle">{{i[4]}}</td>
-                    <td class="align-middle">{{i[5]}}</td>
-                    <td class="align-middle">{{i[6]}}</td>
+                    <td class = "align-middle">{{i[0]}}</td>
+                    <td class = "align-middle">{{i[1]}}</td>
+                    <td class = "align-middle">{{i[2]+' '+i[3]}}</td>
+                    <td class = "align-middle">{{i[4]}}</td>
                 </tr>
                 {% endfor %}
             </tbody>

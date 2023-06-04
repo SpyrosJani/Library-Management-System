@@ -23,7 +23,7 @@
     #search {
         position: fixed;
         left: 175px;
-        top: 0px;
+        top: 5px;
     }
 </style>
 {% endblock %}
@@ -53,21 +53,21 @@
         </div>
         <div style = "display: table-cell;">
             <span class = "input-group-text">
-            <button type="submit" class="btn btn-light">Search</button>
+            <button type="submit" class="btn btn-light">Search <i class="fa-solid fa-magnifying-glass"></i></button>
             </span>
         </div>
     </form>
 </div>
 <div id="topRight">
-    <a href="/" class="btn btn-info" role="button">LogOut</a>
+    <a href="/" class="btn btn-info" role="button">LogOut <i class="fa-solid fa-right-from-bracket"></i></a>
 </div>
 
 <div id="topLeft">
-    <a href="/schooladmin/booklist/add" class="btn btn-info" role="button">Add a new book</a>
+    <a href="/schooladmin/booklist/add" class="btn btn-info" role="button">Add a new book <i class="fa-solid fa-square-plus"></i></a>
 </div>
 
 <div id="nextToRight">
-    <a href="/schooladmin" class="btn btn-info" role="button">Home</a>
+    <a href="/schooladmin" class="btn btn-info" role="button">Home <i class = "fa fa-house"></i></a>
 </div>
 
 <div class="container">
@@ -107,13 +107,13 @@
                     <div contenteditable id="editable_{{i[5]}}_5">{{i[6]}}</div>
                 </td>
                 <td class="align-middle">
-                    <a href = "/schooladmin/booklist" class="btn btn-info" role = "button" onclick="handle_Click_Update(document.getElementById('editable_{{i[5]}}_5').textContent, '{{i[0]}}')">Update</a>
+                    <a href = "/schooladmin/booklist/update" class="btn btn-info" role = "button" onclick="handle_Click_Update(document.getElementById('editable_{{i[5]}}_5').textContent, '{{i[0]}}')">Update</a>
                 </td>
                 <td class="align-middle">
-                    <a href = "/schooladmin/booklist" class="btn btn-outline-danger" role = "button" onclick="handle_Click_Delete('{{i[0]}}')">Delete</a>
+                    <a href = "/schooladmin/booklist/delete" class="btn btn-outline-danger" role = "button" onclick="handle_Click_Delete('{{i[0]}}')">Delete</a>
                 </td>
                 <td class="align-middle">
-                    <a href = "/schooladmin/booklist/details" class="btn btn-info" role = "button" onclick="handle_Click_Details('{{i[0]}}')">Details</a>
+                    <a href = "/schooladmin/booklist/details_aux" class="btn btn-info" role = "button" onclick="handle_Click_Details('{{i[0]}}')">Details</a>
                 </td>
             </tr>
             {% endfor %}
@@ -148,7 +148,7 @@
       var formData = new FormData();
       formData.append('details_button', buttonId);
         
-      fetch('/schooladmin/booklist/details', {
+      fetch('/schooladmin/booklist/details_aux', {
         method: 'POST',
         body: formData
       });

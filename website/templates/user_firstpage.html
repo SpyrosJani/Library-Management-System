@@ -12,7 +12,7 @@
 
 {% block content %}
 <div id="topRight">
-    <a href="/" class = "btn btn-info" role="button">LogOut</a> 
+    <a href="/" class = "btn btn-info" role="button">LogOut <i class="fa-solid fa-right-from-bracket"></i></a> 
 </div>
 {% endblock %}
 
@@ -20,8 +20,20 @@
                     <li class = "nav-item"> 
                         <a class = "nav-link" href = "/user/booksearch">Books List</a>
                     </li>
-                    <li class = "nav-item"> 
-                        <a class = "nav-link" href = "/user/books">My Books</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                            Books
+                        </a>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="/user/books/borrowings/waiting" data-toggle="tooltip"
+                                title="Overview of all approved borrowings"> Waiting Borrowings List </a>
+                            <a class="dropdown-item" href="/user/books/reservations/waiting" data-toggle="tooltip"
+                                title="Approve a pending borrowing request"> Waiting Reservations List </a>
+                            <a class="dropdown-item" href="/user/books/reservations/waitingqueue" data-toggle="tooltip"
+                                title="Show completed borrowing"> Standby Reservations List </a>
+                            <a class="dropdown-item" href="/user/books/borrowings/approved" data-toggle="tooltip"
+                                title="Show completed borrowing"> Approved Borrowings List </a>
+                        </div>
                     </li>
                     <li class = "nav-item"> 
                         <a class = "nav-link" href = "/user/reviews">My Reviews</a>

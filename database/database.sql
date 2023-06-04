@@ -1,6 +1,7 @@
 -----------------------------------------Create Database----------------------------------------
 CREATE DATABASE librarydbms;
 USE librarydbms;
+SET GLOBAL event_scheduler = ON;
 
 -----------------------------------------Tables----------------------------------------
 --administrator(admin_id, login_id, passwd, first_name, last_name, sex, birth_date)
@@ -221,44 +222,13 @@ CREATE TABLE borrowing(
 --Gonna add some indexes here
 CREATE INDEX idx_author ON author (first_name, last_name, ISBN);
 CREATE INDEX idx_category ON category (category, ISBN);
-CREATE INDEX idx_user ON user (first_name, last_name, job, user_status, books_borrowed);
+CREATE INDEX idx_user ON user (user_id, first_name, last_name, job, user_status, books_borrowed, login_id);
 CREATE INDEX idx_school ON school (school_id, school_name);
-CREATE INDEX idx_borrowing ON borrowing (ISBN, user_id, borrowing_date, borrowing_status, scadmin_id);
+CREATE INDEX idx_borrowing ON borrowing (borrowing_id, ISBN, user_id, borrowing_date, borrowing_status, scadmin_id);
 CREATE INDEX idx_book ON book (ISBN, book_title, school_id, scadmin_id);
-CREATE INDEX idx_school_admin ON school_admin (scadmin_id, first_name, last_name);
------------------------------------------Views-----------------------------------------
-CREATE VIEW administrator_view AS
-    SELECT admin_id, login_id, first_name, last_name, birth_date 
-    FROM administrator; 
-
-CREATE VIEW school_admin_view AS 
-    SELECT scadmin_id, login_id, first_name, last_name, birth_date, school_id
-    FROM school_admin; 
-
-CREATE VIEW school_view AS 
-    SELECT school_id, school_name, city, phone_number, email, addrss 
-    FROM school; 
-
-CREATE VIEW user_view AS
-    SELECT user_id, login_id, first_name, last_name, birth_date, job, books_borrowed
-    FROM user; 
-
-CREATE VIEW book_view AS 
-    SELECT school_id, book_title, publisher, no_pages, summary, available, sprache
-    FROM book; 
-
-CREATE VIEW author_view AS
-    SELECT first_name, last_name 
-    FROM author; 
-
-CREATE VIEW category_view AS
-    SELECT category 
-    FROM category;
-
-CREATE VIEW keywords_view AS
-    SELECT keyword 
-    FROM keywords; 
-
+CREATE INDEX idx_school_admin ON school_admin (scadmin_id, first_name, last_name, login_id, school_id);
+CREATE INDEX idx_review ON review (review_id, user_id, review_status, ISBN);
+CREATE INDEX idx_reservation ON reservation(reservation_id, ISBN, user_id, reservation_date, reservation_to_date, reservation_status);
 ------------------------------------Trigger---------------------------------------------
 DELIMITER //
 CREATE TRIGGER borrowing_state AFTER INSERT ON borrowing FOR EACH ROW

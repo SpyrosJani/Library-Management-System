@@ -1,0 +1,303 @@
+{% extends "home_page.html" %} {% block title %}Write a review{% endblock %}
+
+{% block button_header %}
+<style>
+    #topRight {
+        position: fixed;
+        top: 0;
+        right: 0;
+    }
+    #nextToRight {
+        position: fixed;
+        top: 0;
+        right: 100px;
+    }
+    #submit {
+         
+        top: 550px; 
+        right: 100px; 
+    }
+
+    .custom-radio {
+        position: relative;
+        display: inline-block;
+        width: 13.5px;
+        height: 13.5px;
+        background-color: red;
+        border-radius: 50%;
+        pointer-events: none;
+        opacity: 0.4;
+    }
+    
+    .custom-radio input {
+        position: absolute;
+        opacity: 0;
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+    <div id="topRight">
+        <a href="/" class="btn btn-info" role="button">LogOut <i class="fa-solid fa-right-from-bracket"></i></a>
+    </div>
+
+    <div id="nextToRight">
+        <a href="/user" class="btn btn-info" role="button">Home <i class = "fa fa-house"></i></a>
+    </div>
+
+
+<div class="container rounded bg-dark mt-5 mb-5" style="color:white;">
+    <div class="row">
+        <div class="p-3 py-5">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1>Grade of the Book</h1>
+            </div>
+            <h4>To each of the below questions, you gave a grade from 1-5 accordingly</h4>
+            <div class="row mt-3">
+                <div class="col md-20">
+                    <label class="labels">
+                        <h6>Question 1: How would you rate the writing style of the book?</h6>
+                    </label>
+                    <div>
+                        <ul style="text-align: left; float: left; list-style-type: none;">
+                            <li style="display:inline">
+                                Less
+                                {% if likert[0]==1 %}
+                                <span class="custom-radio"></span>
+                                {% else %}
+                                <input id="radBookStart" type="radio" name="Book1" value="1" disabled/>
+                                {% endif %}
+                            </li>
+                            <li style="display:inline">
+                                {% if likert[0]==2 %}
+                                <span class="custom-radio" ></span>
+                                {% else %}
+                                <input id="radBookStart" type="radio" name="Book1" value="2" disabled/>
+                                {% endif %}
+                            <li style="display:inline">
+                                {% if likert[0]==3 %}
+                                <span class="custom-radio"></span>
+                                {% else %}
+                                <input id="radBookStart" type="radio" name="Book1" value="3" disabled/>
+                                {% endif %}
+                            </li>
+                            <li style="display:inline">
+                                {% if likert[0]==4 %}
+                                <span class="custom-radio"></span>
+                                {% else %}
+                                <input id="radBookStart" type="radio" name="Book1" value="4" disabled/>
+                                {% endif %}
+                            </li>
+                            <li style="display:inline">
+                                {% if likert[0]==5 %}
+                                <span class="custom-radio"></span>
+                                {% else %}
+                                <input id="radBookEnd" type="radio" name="Book2" value="5" disabled/>
+                                {% endif %}
+                                More
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col md-20">
+                    <label class="labels">
+                        <h6>Question 2: How engaging was the book in terms of holding your interest?</h6>
+                    </label>
+                    <div>
+                        <ul style="text-align: left; float: left; list-style-type: none;">
+                            <li style="display:inline">
+                                Less
+                                {% if likert[1]==1 %}
+                                <span class="custom-radio"></span>
+                                {% else %}
+                                <input id="radBookStart" type="radio" name="Book1" value="1" disabled/>
+                                {% endif %}
+                            </li>
+                            <li style="display:inline">
+                                {% if likert[1]==2 %}
+                                <span class="custom-radio"></span>
+                                {% else %}
+                                <input id="radBookStart" type="radio" name="Book1" value="2" disabled/>
+                                {% endif %}
+                            <li style="display:inline">
+                                {% if likert[1]==3 %}
+                                <span class="custom-radio"></span>
+                                {% else %}
+                                <input id="radBookStart" type="radio" name="Book1" value="3" disabled/>
+                                {% endif %}
+                            </li>
+                            <li style="display:inline">
+                                {% if likert[1]==4 %}
+                                <span class="custom-radio"></span>
+                                {% else %}
+                                <input id="radBookStart" type="radio" name="Book1" value="4" disabled/>
+                                {% endif %}
+                            </li>
+                            <li style="display:inline">
+                                {% if likert[1]==5 %}
+                                <span class="custom-radio"></span>
+                                {% else %}
+                                <input id="radBookEnd" type="radio" name="Book2" value="5" disabled/>
+                                {% endif %}
+                                More
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col md-20">
+                    <label class="labels">
+                        <h6>Question 3: How satisfied are you with the overall reading experience?</h6>
+                    </label>
+                    <div>
+                        <ul style="text-align: left; float: left; list-style-type: none;">
+                            <li style="display:inline">
+                                Less
+                                {% if likert[2]==1 %}
+                                <span class="custom-radio"></span>
+                                {% else %}
+                                <input id="radBookStart" type="radio" name="Book1" value="1" disabled/>
+                                {% endif %}
+                            </li>
+                            <li style="display:inline">
+                                {% if likert[2]==2 %}
+                                <span class="custom-radio"></span>
+                                {% else %}
+                                <input id="radBookStart" type="radio" name="Book1" value="2" disabled/>
+                                {% endif %}
+                            <li style="display:inline">
+                                {% if likert[2]==3 %}
+                                <span class="custom-radio"></span>
+                                {% else %}
+                                <input id="radBookStart" type="radio" name="Book1" value="3" disabled/>
+                                {% endif %}
+                            </li>
+                            <li style="display:inline">
+                                {% if likert[2]==4 %}
+                                <span class="custom-radio"></span>
+                                {% else %}
+                                <input id="radBookStart" type="radio" name="Book1" value="4" disabled/>
+                                {% endif %}
+                            </li>
+                            <li style="display:inline">
+                                {% if likert[2]==5 %}
+                                <span class="custom-radio"></span>
+                                {% else %}
+                                <input id="radBookEnd" type="radio" name="Book2" value="5" disabled/>
+                                {% endif %}
+                                More
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col md-20">
+                    <label class="labels">
+                        <h6>Question 4: Did the book meet your expectations?</h6>
+                    </label>
+                    <div>
+                        <ul style="text-align: left; float: left; list-style-type: none;">
+                            <li style="display:inline">
+                                Less
+                                {% if likert[3]==1 %}
+                                <span class="custom-radio"></span>
+                                {% else %}
+                                <input id="radBookStart" type="radio" name="Book1" value="1" disabled/>
+                                {% endif %}
+                            </li>
+                            <li style="display:inline">
+                                {% if likert[3]==2 %}
+                                <span class="custom-radio"></span>
+                                {% else %}
+                                <input id="radBookStart" type="radio" name="Book1" value="2" disabled/>
+                                {% endif %}
+                            <li style="display:inline">
+                                {% if likert[3]==3 %}
+                                <span class="custom-radio"></span>
+                                {% else %}
+                                <input id="radBookStart" type="radio" name="Book1" value="3" disabled/>
+                                {% endif %}
+                            </li>
+                            <li style="display:inline">
+                                {% if likert[3]==4 %}
+                                <span class="custom-radio"></span>
+                                {% else %}
+                                <input id="radBookStart" type="radio" name="Book1" value="4" disabled/>
+                                {% endif %}
+                            </li>
+                            <li style="display:inline">
+                                {% if likert[3]==5 %}
+                                <span class="custom-radio"></span>
+                                {% else %}
+                                <input id="radBookEnd" type="radio" name="Book2" value="5" disabled/>
+                                {% endif %}
+                                More
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col md-20">
+                    <label class="labels">
+                        <h6>Question 5: Overall, how would you rate the book?</h6>
+                    </label>
+                    <div>
+                        <ul style="text-align: left; float: left; list-style-type: none;">
+                            <li style="display:inline">
+                                Less
+                                {% if likert[4]==1 %}
+                                <span class="custom-radio"></span>
+                                {% else %}
+                                <input id="radBookStart" type="radio" name="Book1" value="1" disabled/>
+                                {% endif %}
+                            </li>
+                            <li style="display:inline">
+                                {% if likert[4]==2 %}
+                                <span class="custom-radio"></span>
+                                {% else %}
+                                <input id="radBookStart" type="radio" name="Book1" value="2" disabled/>
+                                {% endif %}
+                            <li style="display:inline">
+                                {% if likert[4]==3 %}
+                                <span class="custom-radio"></span>
+                                {% else %}
+                                <input id="radBookStart" type="radio" name="Book1" value="3" disabled/>
+                                {% endif %}
+                            </li>
+                            <li style="display:inline">
+                                {% if likert[4]==4 %}
+                                <span class="custom-radio"></span>
+                                {% else %}
+                                <input id="radBookStart" type="radio" name="Book1" value="4" disabled/>
+                                {% endif %}
+                            </li>
+                            <li style="display:inline">
+                                {% if likert[4]==5 %}
+                                <span class="custom-radio"></span>
+                                {% else %}
+                                <input id="radBookEnd" type="radio" name="Book2" value="5" disabled/>
+                                {% endif %}
+                                More
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1>Review <i class="fa-solid fa-pencil"></i></h1>
+            </div>
+            <div class="row mt-3">
+                <div class="col md-20">
+                    <textarea id="review" name="review" rows="4" cols="50" readonly>{{review_text}}</textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

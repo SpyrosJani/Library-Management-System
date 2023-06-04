@@ -22,11 +22,11 @@
 
 {% block content %}
     <div id="topRight">
-        <a href="/" class = "btn btn-info" role="button">LogOut</a> 
+        <a href="/" class = "btn btn-info" role="button">LogOut <i class="fa-solid fa-right-from-bracket"></i></a> 
     </div>
 
     <div id = "nextToRight"> 
-        <a href = "/admin" class = "btn btn-info" role = "button">Home</a>
+        <a href = "/admin" class = "btn btn-info" role = "button">Home <i class = "fa fa-house"></i></a>
     </div>
 
     <div class = "container" style = "width: 70%;"> 
@@ -44,8 +44,8 @@
                     <tr>
                         <td class="align-middle">{{i[0]+' '+i[1]}}</td>
                         <td class="align-middle">{{i[2]}}</td>       
-                        <td class="align-middle"><a href = "/admin/pending" class="btn btn-outline-success" role = "button" onclick="handle_Click_Approve('{{i[3]}}')">Approve</a></td>
-                        <td class="align-middle"><a href = "/admin/pending" class="btn btn-outline-danger" role = "button" onclick="handle_Click_Decline('{{i[3]}}')">Decline</a></td>
+                        <td class="align-middle"><a href = "/admin/pending_approve" class="btn btn-outline-success" role = "button" onclick="handle_Click_Approve('{{i[3]}}')">Approve</a></td>
+                        <td class="align-middle"><a href = "/admin/pending_decline" class="btn btn-outline-danger" role = "button" onclick="handle_Click_Decline('{{i[3]}}')">Decline</a></td>
                     </tr>
                 </thead>
             {% endfor %}

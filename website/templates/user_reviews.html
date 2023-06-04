@@ -27,36 +27,11 @@
 
 {% block content %}
     <div id="topRight">
-        <a href="/home" class = "btn btn-info" role="button">LogOut</a> 
+        <a href="/" class = "btn btn-info" role="button">LogOut <i class="fa-solid fa-right-from-bracket"></i></a> 
     </div>
 
     <div id = "nextToRight"> 
-        <a href = "/user" class = "btn btn-info" role = "button">Home</a>
-    </div>
-
-    <div class="form-outline" style = "display:table;" id="search">
-        <form action="/user/booksearch" method="POST">
-            <div style = "display: table-cell;">
-                <span class = "input-group-text">
-                <input type="search" class="form-control" id="find_book" placeholder="Search book title" name="title">
-                </span>
-            </div>
-            <div style = "display: table-cell;">
-                <span class = "input-group-text">
-                <input type="search" class="form-control" id="find_author" placeholder="Search author" name="author">    
-                </span>
-            </div>
-            <div style = "display: table-cell;">
-                <span class = "input-group-text">
-                <input type="search" class="form-control" id="find_category" placeholder="Search category" name="category">   
-                </span>
-            </div>
-            <div style = "display: table-cell;">
-                <span class = "input-group-text">
-                <button type="submit" class="btn btn-light">Search</button>
-                </span>
-            </div>
-        </form>
+        <a href = "/user" class = "btn btn-info" role = "button">Home <i class = "fa fa-house"></i></a>
     </div>
 
     <div class = "container"> 
@@ -67,23 +42,21 @@
                     <th scope="col" class = "col-2">Title</th>
                     <th scope="col" class = "col-2">Author</th>
                     <th scope="col" class = "col-2">Publisher</th>
-                    <th scope="col" class = "col-2">Page Number</th>
-                    <th scope="col" class = "col-2">Language</th>
-                    <th scope="col" class = "col-3">Cover</th>
-                    <th scope="col" class = "col-2">Review</th>
+                    <th scope="col" class = "col-2">Review Date</th>
+                    <th scope="col" class = "col-1">Review</th>
                 </tr>
             </thead>
             <tbody>
+                {% for i in reviews %}
                 <tr>
-                    <td class = "align-middle">978-2-12-345680-3</td>
-                    <td class = "align-middle">Wuthering Heights</td>
-                    <td class = "align-middle">Emily Bronte</td>
-                    <td class = "align-middle">Wordsworth</td>
-                    <td class = "align-middle">256</td>
-                    <td class = "align-middle">English</td>
-                    <td class = "align-middle"><button type = "button" class = "btn btn-outline-light">Read Review</button></td>
-                    <td class = "align-middle"><a href = "/user/booksearch/details" class="btn btn-light" role = "button">Details</a></td>
+                    <td class = "align-middle">{{i[0]}}</td>
+                    <td class = "align-middle">{{i[1]}}</td>
+                    <td class = "align-middle">{{i[2]+' '+i[3]}}</td>
+                    <td class = "align-middle">{{i[4]}}</td>
+                    <td class = "align-middle">{{i[5]}}</td>
+                    <td class="align-middle"><a href="/user/booksearch/reviewdetails_aux" class = "btn btn-outline-info" role = "button" onclick="handle_Click_Details('{{i[6]}}')">Details</a></td>
                 </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
@@ -91,9 +64,9 @@
     <script>
     function handle_Click_Details(buttonId) {
       var formData = new FormData();
-      formData.append('details_button', buttonId);
+      formData.append('reviewdetails_button', buttonId);
         
-      fetch('/user/booksearch/details', {
+      fetch('/user/booksearch/reviewdetails_aux', {
         method: 'POST',
         body: formData
       });

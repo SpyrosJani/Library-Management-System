@@ -18,11 +18,11 @@
 
 {% block content %}
 <div id="topRight">
-    <a href="/" class = "btn btn-info" role="button">LogOut</a> 
+    <a href="/" class = "btn btn-info" role="button">LogOut <i class="fa-solid fa-right-from-bracket"></i></a> 
 </div>
 
 <div id = "nextToRight"> 
-    <a href = "/schooladmin" class = "btn btn-info" role = "button">Home</a>
+    <a href = "/schooladmin" class = "btn btn-info" role = "button">Home <i class = "fa fa-house"></i></a>
 </div>
 
 <div class = "container rounded bg-dark mt-5 mb-5" style = "color:white;">
@@ -52,9 +52,17 @@
                             </div>
                         </div>
                         <div class = "mb-3">
-                            <label class = "labels">Author</label>
+                            <label class = "labels">Author(s)</label>
                             <div class = "h-50 container rounded bg-white" style = "color:black;">
-                                <span style = 'vertical-align:middle;'>{{book[0][1] + '' + book[0][2]}}</span>
+                                {% for i in authors %}
+                                <span style = 'vertical-align:middle;'>
+                                    {% if loop.last %}
+                                        {{i[0] + ' ' + i[1]}}
+                                    {% else %}
+                                        {{i[0] + ' ' + i[1]+ ', '}}
+                                    {% endif %}
+                                </span>
+                                {% endfor %}
                             </div>
                         </div>
                         <div class = "mb-3">
@@ -78,13 +86,29 @@
                         <div class = "mb-3">
                             <label class = "labels">Thematic Categories</label>
                             <div class = "h-50 container rounded bg-white" style = "color:black;">
-                                <span style = 'vertical-align:middle;'>{{book[0][6]}}</span>
+                                {% for i in categories %}
+                                <span style = 'vertical-align:middle;'>
+                                    {% if loop.last %}
+                                        {{i[0]}}
+                                    {% else %}
+                                        {{i[0] + ', '}}
+                                    {% endif %}
+                                </span>
+                                {% endfor %}
                             </div>
                         </div>
                         <div class = "mb-3">
                             <label class = "labels">Keywords</label>
                             <div class = "h-50 container rounded bg-white" style = "color:black;">
-                                <span style = 'vertical-align:middle;'>{{book[0][7]}}</span>
+                                {% for i in keywords %}
+                                <span style = 'vertical-align:middle;'>
+                                    {% if loop.last %}
+                                        {{i[0]}}
+                                    {% else %}
+                                        {{i[0] + ', '}}
+                                    {% endif %}
+                                </span>
+                                {% endfor %}
                             </div>
                         </div>
                         <div class = "mb-3">

@@ -30,11 +30,11 @@
         <a href="/schooladmin/users/pending" class = "btn btn-info" role = "button">See Pending Users</a>
     </div>
     <div id="topRight">
-        <a href="/" class = "btn btn-info" role="button">LogOut</a> 
+        <a href="/" class = "btn btn-info" role="button">LogOut <i class="fa-solid fa-right-from-bracket"></i></a> 
     </div>
 
     <div id = "nextToRight"> 
-        <a href = "/schooladmin" class = "btn btn-info" role = "button">Home</a>
+        <a href = "/schooladmin" class = "btn btn-info" role = "button">Home <i class = "fa fa-house"></i></a>
     </div>
 
     <div class="form-outline" style = "display:table;" id="search">
@@ -46,7 +46,7 @@
             </div>
             <div style = "display: table-cell;">
                 <span class = "input-group-text">
-                <button type="submit" class="btn btn-light">Search</button>
+                <button type="submit" class="btn btn-light"><i class="fa-solid fa-magnifying-glass"></i></button>
                 </span>
             </div>
         </form>
@@ -73,8 +73,8 @@
                     <td class="align-middle">{{i[2]}}</td>
                     <td class="align-middle">{{i[3]}}</td>
                     <td class="align-middle">{{i[4]}}</td>
-                    <td class="align-middle"><a href="/schooladmin/users" class = "btn btn-outline-warning" role = "button" onclick="handle_Click_Deactivate('{{i[6]}}')">Deactivate</a></td>
-                    <td class="align-middle"><a href="/schooladmin/users" class = "btn btn-outline-danger" role = "button" onclick="handle_Click_Delete('{{i[6]}}')">Delete</a></td>
+                    <td class="align-middle"><a href="/schooladmin/users/deactivate" class = "btn btn-outline-warning" role = "button" onclick="handle_Click_Deactivate('{{i[6]}}')">Deactivate</a></td>
+                    <td class="align-middle"><a href="/schooladmin/users/delete" class = "btn btn-outline-danger" role = "button" onclick="handle_Click_Delete('{{i[6]}}')">Delete</a></td>
                 </tr>
                 {% endfor %}
             </tbody>

@@ -22,11 +22,11 @@
 
 {% block content %}
     <div id="topRight">
-        <a href="/" class = "btn btn-info" role="button">LogOut</a> 
+        <a href="/" class = "btn btn-info" role="button">LogOut <i class="fa-solid fa-right-from-bracket"></i></a> 
     </div>
 
     <div id = "nextToRight"> 
-        <a href = "/schooladmin" class = "btn btn-info" role = "button">Home</a>
+        <a href = "/schooladmin" class = "btn btn-info" role = "button">Home <i class = "fa fa-house"></i></a>
     </div>
 
     <div class = "container"> 
@@ -53,7 +53,7 @@
                     <td class = "align-middle">{{i[5]}}</td>
                     <td class = "align-middle">{{i[6]}}</td>
                     <td class = "align-middle">{{i[7]}}</td>
-                    <td class = "align-middle"><a href = "/schooladmin/reservelist" class = "btn btn-outline-warning" role = "button" onclick = "handle_Click_Proceed('{{i[8]}}')">Proceed</a></td>
+                    <td class = "align-middle"><a href = "/schooladmin/reservelist/proceed" class = "btn btn-outline-warning" role = "button" onclick = "handle_Click_Proceed('{{i[8]}}')">Proceed</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
