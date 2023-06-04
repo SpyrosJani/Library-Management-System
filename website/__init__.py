@@ -7,9 +7,3 @@ app.config['SECRET_KEY'] = 'lkjiofewjiopfwoi;f;w' #encrypt cookies and session d
 app.config['PERMANENT_SESSION_LIFETIME'] = 360000
 
 app.register_blueprint(routes, url_prefix='/') #access the blueprints in each file with no prefix
-
-
-
-
-
-
