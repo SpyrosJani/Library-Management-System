@@ -42,7 +42,8 @@
                     <th scope="col" class = "col-2">Title</th>
                     <th scope="col" class = "col-2">Author</th>
                     <th scope="col" class = "col-2">Reservation Date(Registration)</th>
-                    {% if queing %}
+                    <th scope="col" class = "col-2">Reservation Date(Get Book)</th>
+                     {% if queing %}
                     <th scope="col" class = "col-2">Cancel</th>
                     {% endif %}
                 </tr>
@@ -54,6 +55,7 @@
                     <td class = "align-middle">{{i[1]}}</td>
                     <td class = "align-middle">{{i[2]+' '+i[3]}}</td>
                     <td class = "align-middle">{{i[4]}}</td>
+                    <td class = "align-middle">{{i[6]}}</td>
                     {% if queing %}
                     <td class="align-middle"><a href="/user/books/reservations/waiting_cancel" class = "btn btn-outline-danger" role = "button" onclick="handle_Click_Cancel('{{i[5]}}')">Cancel reservation</a></td>
                     {% endif %}

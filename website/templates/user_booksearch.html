@@ -99,28 +99,28 @@
     </div>
 <form action = "/user/booksearch/reserve" method = 'POST'>
     <div class="modal fade" id="reserveDate" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="reserve_to_date" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
+    <div class="modal-dialog">
+        <div class="modal-content">
 
-                <!-- Modal Header -->
-                <div class="modal-header">
-                    <h4 class="modal-title" id="#reserve_to_date">Enter Date</h4>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label = "Close"></button>
-                </div>
-
-                <!-- Modal body -->
-                <div class="modal-body">
-                    <input class = "form-control" type = "date" placeholder = "When do you want to borrow the book?" name = "reserve_to_date" required/>
-                </div>
-
-                <!-- Modal footer -->
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Reserve</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title" id="#reserve_to_date">Enter Date</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+
+            <!-- Modal body -->
+            <div class="modal-body">
+                <input class="form-control" type="date" placeholder="When do you want to borrow the book?" name="reserve_to_date" id="reserveToDate" required/>
+            </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Reserve</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+
         </div>
+    </div>
     </div>
 </form>
 
@@ -164,5 +164,28 @@
         body: formData
       });
     }
+    </script>
+    <script>
+        // Function to set the minimum date as today
+        function setMinDate() {
+            var today = new Date();
+            var dd = today.getDate();
+            var mm = today.getMonth() + 1; // January is 0
+            var yyyy = today.getFullYear();
+
+            if (dd < 10) {
+                dd = '0' + dd;
+            }
+
+            if (mm < 10) {
+                mm = '0' + mm;
+            }
+
+            var minDate = yyyy + '-' + mm + '-' + dd;
+            document.getElementById('reserveToDate').setAttribute('min', minDate);
+        }
+
+        // Call the setMinDate function when the modal is shown
+        document.getElementById('reserveDate').addEventListener('shown.bs.modal', setMinDate);
     </script>
 {% endblock %}

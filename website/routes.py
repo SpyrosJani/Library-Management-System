@@ -530,7 +530,7 @@ def userooks_reservationwaitings():
 
             user_id = int(session.get("id"))
 
-            query = ("""SELECT book.ISBN, book.book_title, author.first_name, author.last_name, reservation_date, reservation_id
+            query = ("""SELECT book.ISBN, book.book_title, author.first_name, author.last_name, reservation_date, reservation_id, reservation_to_date
                         FROM reservation
                         INNER JOIN book ON reservation.ISBN = book.ISBN
                         INNER JOIN author ON author.ISBN = book.ISBN
@@ -587,7 +587,7 @@ def userooks_reservationwaitings_queue():
 
             user_id = int(session.get("id"))
 
-            query = ("""SELECT book.ISBN, book.book_title, author.first_name, author.last_name, reservation_date
+            query = ("""SELECT book.ISBN, book.book_title, author.first_name, author.last_name, reservation_date, reservation_id, reservation_to_date
                         FROM reservation
                         INNER JOIN book ON reservation.ISBN = book.ISBN
                         INNER JOIN author ON author.ISBN = book.ISBN
@@ -1051,10 +1051,10 @@ def restore():
             DB_USER = user_config
             DB_NAME = database_config
             DB_PASSWORD = password_config
-            FOLDERS = os.listdir('/home/geokoko/code/LibApp/database/backup')
+            FOLDERS = os.listdir('./database/backup')
             
             FOLDERS.sort()
-            BACKUP_PATH = os.path.join('/home/geokoko/code/LibApp/database/backup/', FOLDERS[-1] + '/librarydbms.sql')
+            BACKUP_PATH = os.path.join('./database/backup/', FOLDERS[-1] + '/librarydbms.sql')
 
             DROP_PREV_BACKUP = f'mysql -u {DB_USER} -p{DB_PASSWORD} -e "DROP DATABASE IF EXISTS librarydbms_backup;"'
             subprocess.call(DROP_PREV_BACKUP, shell=True)
@@ -1095,13 +1095,12 @@ def create_backup():
             DB_USER = user_config
             DB_NAME = database_config
             DB_PASSWORD = password_config
-            BACKUP_PATH = '/home/geokoko/code/LibApp/database/backup'
+            BACKUP_PATH = './database/backup'
 
             # Getting current DateTime to create the separate backup folder like "20180817-123433".
             DATETIME = time.strftime('%Y%m%d-%H%M%S')
             TODAYBACKUPPATH = BACKUP_PATH + '/' + DATETIME
             
-            # Checking if backup folder already exists or not. If not exists will create it.
             try:
                 os.stat(TODAYBACKUPPATH)
             except:
@@ -1970,16 +1969,8 @@ def schooladmin_pendingborrowings():
 def schooladmin_pendingborrowings_approve():
     global checked, avail
     try:
-        if(session['sadmin_access']):
-            if(request.method == 'GET'):
-                if(checked == 1):
-                    if(avail > 0):
-                        flash('Borrowing done!', category='success')
-                    else:
-                        flash('No books available, user is automatically in a priority queue', category='error')
-                else:
-                    flash('User does not compromise with the limitations', category='error')
-            elif(request.method == 'POST'):
+        if(session['sadmin_access']):          
+            if(request.method == 'POST'):
                 approve = request.form['schooladmin_proceed_borrowing']
                 
                 connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
@@ -2011,9 +2002,18 @@ def schooladmin_pendingborrowings_approve():
                 listing = []
                 for i in result:
                     listing.append(i.fetchall()[0][0])
-                checked = listing[0]
-                avail = listing[1]
-                
+                if len(listing) != 0:
+                    checked = listing[0]
+                    avail = listing[1]
+                    
+                    if(checked == 1):
+                        if(avail > 0):
+                            flash('Borrowing done!', category='success')
+                        else:
+                            flash('No books available, user is automatically in a priority queue', category='error')
+                    else:
+                        flash('User does not compromise with the limitations', category='error')
+
                 cursor.close()
                 connection.close()
                 return redirect('/schooladmin/borrowings/pending')
@@ -2065,16 +2065,7 @@ def schooladmin_reserve_proceed():
     global checkedr, availr
     try:
         if(session['sadmin_access']):
-            if (request.method == 'GET'):
-                if(checkedr == 1):
-                    if(availr > 0):
-                        flash('Reservation Approved!', category='success')
-                    else:
-                        flash("""No books available right now, user is automatically in a 
-                                priority queue and further commits will be done at the borrowing date""", category='error')
-                else:
-                    flash('User does not compromise with the limitations', category='error')
-            elif (request.method == 'POST'):
+            if (request.method == 'POST'):
                 proceed_button = request.form['proceed_button']
 
                 connection = sql.connect(host = host_config, database = database_config, user = user_config, password = password_config) 
@@ -2121,6 +2112,15 @@ def schooladmin_reserve_proceed():
                 checkedr = listing[0]
                 availr = listing[1]
                 
+                if(checkedr == 1):
+                    if(availr > 0):
+                        flash('Reservation Approved!', category='success')
+                    else:
+                        flash("""No books available right now, user is automatically in a 
+                                priority queue and further commits will be done at the borrowing date""", category='error')
+                else:
+                    flash('User does not compromise with the limitations', category='error')
+
                 cursor.close()
                 connection.close()
         else:

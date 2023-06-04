@@ -5,7 +5,32 @@ Our Team: Miltiadis-Georgios Kolovos, Georgios Kokoromytis, Spyridon Jani
 
 ## Installation guide for Linux (Debian):
 
-#### Update your repositories and get the latest versions of our used Libraries:
+#### Download git:
+
+```bash
+sudo apt-get update
+sudo apt-get install git
+```
+
+#### Verify installation:
+
+```bash
+git --version
+```
+
+#### Clone the repository:
+
+```bash
+git clone https://github.com/geokoko/Library-Management-System
+```
+
+#### Navigate to the project directory:
+
+```bash
+cd Library-Management-System
+```
+
+#### Install the required dependencies:
 
 ```bash
 sudo apt-get update
@@ -51,20 +76,31 @@ mysql -u root -p
 #### Load the database:
 
 ```bash
-MariaDB [(none)]> source /path/to/database/database.sql;
+MariaDB [(none)]> source ./database/dmlscript.sql;
 ```
-
-Run this command three times, once for the file path leading to database.sql, once for queries.sql to run the queries, and once for data.sql.
 
 ## Installation guide on Windows:
 
+#### Download Git [from official Git website](https://git-scm.com/download/win)
+
 #### [Download XAMPP from its original Site](https://www.apachefriends.org/download.html)
 
-#### Run the downloaded XAMPP installer, Choose the desired installation directory and Select the components you want to install (Apache, MySQL, phpmyadmin)
+#### Run the downloaded XAMPP installer, Choose the desired installation directory and Select the components you want to install (Apache, MySQL, phpmyadmin, MariaDB)
 
-#### [Download Maria DB from this link](https://mariadb.org/download/?t=mariadb&p=mariadb&r=11.1.0&i=systemd&os=windows&cpu=x86_64&pkg=msi&m=crete)
+#### Clone the repository:
 
-#### Install Maria DB by running the installer and following instructions
+1. Open the XAMPP installation directory (usually 'C:\xampp\htdocs').
+2. Navigate to the directory where you want to clone the repository.
+3. Copy the repository's clone URL. You can find it on the repository's main page or by clicking the "Clone" button.
+4. In the terminal or command prompt, run the following command to clone the repository:
+
+```bash
+git clone https://github.com/geokoko/Library-Management-System
+```
+
+#### If still needed, [download Maria DB from this link](https://mariadb.org/download/?t=mariadb&p=mariadb&r=11.1.0&i=systemd&os=windows&cpu=x86_64&pkg=msi&m=crete)
+
+Install Maria DB by running the installer and following instructions.
 
 #### Configure XAMPP to use Maria DB. Run XAMPP.
 
@@ -81,9 +117,9 @@ And enter password when prompted.
 #### Load the database from the cloned git repo:
 
 ```bash
-MariaDB [(none)]> source c:\path\to\database\database.sql;
+MariaDB [(none)]> source c:\directory_where_the_repo_was_cloned\database\dmlscript.sql;
 ```
-Load the files database.sql, queries.sql and data.sql.
+Load the file dmlscript.sql from our repo.
 
 ## Run the app:
 
