@@ -141,4 +141,4 @@ The app will run at http://localhost:5000/. Then Login or Sign Up through our we
 ![user_home](screenshots/user_home.png)
 ![school_admin_home](screenshots/school_admin_home.png)
 
-#### For further information about our app, you can read our user manual.
+#### For further information about our app, you can read our user manual. (report.pdf)
