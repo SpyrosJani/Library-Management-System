@@ -87,7 +87,7 @@ Load the files database.sql, queries.sql and data.sql.
 
 ## Run the app:
 
-#### Before running the app, go to the data.yaml file and insert your local database credentials (Your database name, which is librarydbms by default, Your database username, which will be 'root' by default, Your host, which by default will be localhost, and the database password that you inserted during installation. If you inserted no password, leave this field empty).
+Before running the app, go to the data.yaml file and insert your local database credentials (Your database name, which is librarydbms by default, Your database username, which will be 'root' by default, Your host, which by default will be localhost, and the database password that you inserted during installation. If you inserted no password, leave this field empty).
 
 #### On the directory of the main.py file, run:
 
