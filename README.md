@@ -51,7 +51,7 @@ mysql -u root -p
 #### Load the database:
 
 ```bash
-source /path/to/database
+MariaDB [(none)]> source /path/to/database/database.sql;
 ```
 
 Run this command three times, once for the file path leading to database.sql, once for queries.sql to run the queries, and once for data.sql.
