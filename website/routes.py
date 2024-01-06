@@ -1887,7 +1887,7 @@ def schooladmin_borrowlist_return():
                 user = cursor.fetchall()
                 user = user[0]
 
-                cursor.callproc('returnable', (int(returning), int(user[0]), int(borrowing[1]), schoolid))
+                cursor.callproc('returnable', (int(returning), int(user[0]), str(borrowing[1]), schoolid))
                 connection.commit()
 
                 cursor.close()
@@ -1955,8 +1955,8 @@ def schooladmin_pendingborrowings():
                     GROUP BY borrowing_id;""".format(school_id))
             cursor.execute(query)
             aux = cursor.fetchall()
-        else:
-            return redirect('/') 
+            
+        return render_template('schooladmin_pendingborrowings.html', aux = aux)
     except Exception as e:
         flash(str(e), category = 'error')
         return redirect('/')
@@ -2427,7 +2427,7 @@ def queuer():
             aux = cursor.fetchall()
             school_id = int(aux[0][0])
             
-            query = ("SELECT * FROM book WHERE ISBN = {} AND school_id = {}".format(i[1], school_id))
+            query = ("SELECT * FROM book WHERE ISBN = '{}' AND school_id = {}".format(i[1], school_id))
             cursor.execute(query)
             aux = cursor.fetchall()
             aux = aux[0]

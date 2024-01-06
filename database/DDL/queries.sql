@@ -41,6 +41,11 @@ DELIMITER //
     END;
 //
 DELIMITER ;
+
+--SELECT DISTINCT author.first_name, author.last_name
+--FROM category
+--INNER JOIN author ON ((which_category = '' OR category.category = which_category) AND author.ISBN = category.ISBN)
+--ORDER BY author.last_name DESC author.first_namr DESC;
 ---------------------------3_1_2_2------------------------------- 
 DELIMITER //
     CREATE DEFINER='root'@'localhost' PROCEDURE question_3_1_2_2(
